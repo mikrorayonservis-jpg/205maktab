@@ -87,7 +87,7 @@ const EVENT_COLS = "id, title_az AS title, slug, description_az AS description, 
 
 export async function upcomingEvents(limit = 6) {
   return db.query<PublicEvent>(
-    `SELECT ${EVENT_COLS} FROM events WHERE is_published = 1 AND deleted_at IS NULL AND status IN ('planned','ongoing') AND COALESCE(end_datetime, start_datetime) >= NOW()
+    `SELECT ${EVENT_COLS} FROM events WHERE is_published = 1 AND deleted_at IS NULL AND status IN ('planned','ongoing') AND COALESCE(end_datetime, start_datetime) >= baku_now()
       ORDER BY start_datetime LIMIT ?`,
     [limit]
   );
@@ -101,9 +101,9 @@ export async function eventsInRange(from: string, to: string) {
 }
 
 export async function pastEvents(page = 1, pageSize = 12) {
-  const total = await db.queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM events WHERE is_published = 1 AND deleted_at IS NULL AND start_datetime < NOW()");
+  const total = await db.queryOne<{ n: number }>("SELECT COUNT(*) AS n FROM events WHERE is_published = 1 AND deleted_at IS NULL AND start_datetime < baku_now()");
   const rows = await db.query<PublicEvent>(
-    `SELECT ${EVENT_COLS} FROM events WHERE is_published = 1 AND deleted_at IS NULL AND start_datetime < NOW() ORDER BY start_datetime DESC LIMIT ? OFFSET ?`,
+    `SELECT ${EVENT_COLS} FROM events WHERE is_published = 1 AND deleted_at IS NULL AND start_datetime < baku_now() ORDER BY start_datetime DESC LIMIT ? OFFSET ?`,
     [pageSize, (page - 1) * pageSize]
   );
   return { rows, total: Number(total?.n || 0), page, pageSize };
@@ -122,7 +122,7 @@ export async function publicGalleries(opts: { category?: string; year?: number; 
   const where = [GALLERY_WHERE];
   const params: unknown[] = [];
   if (opts.category) { where.push("g.category_az = ?"); params.push(opts.category); }
-  if (opts.year) { where.push("YEAR(g.event_date) = ?"); params.push(opts.year); }
+  if (opts.year) { where.push("EXTRACT(YEAR FROM g.event_date)::int = ?"); params.push(opts.year); }
   const pageSize = opts.pageSize ?? 12;
   const page = opts.page ?? 1;
   const total = await db.queryOne<{ n: number }>(`SELECT COUNT(*) AS n FROM galleries g WHERE ${where.join(" AND ")}`, params);
@@ -131,7 +131,7 @@ export async function publicGalleries(opts: { category?: string; year?: number; 
             g.event_date, g.category_az,
             (SELECT COUNT(*) FROM gallery_images gi WHERE gi.gallery_id = g.id) AS image_count,
             (SELECT COUNT(*) FROM gallery_videos gv WHERE gv.gallery_id = g.id) AS video_count
-       FROM galleries g WHERE ${where.join(" AND ")} ORDER BY COALESCE(g.event_date, DATE(g.created_at)) DESC LIMIT ? OFFSET ?`,
+       FROM galleries g WHERE ${where.join(" AND ")} ORDER BY COALESCE(g.event_date, (g.created_at AT TIME ZONE 'Asia/Baku')::date) DESC LIMIT ? OFFSET ?`,
     [...params, pageSize, (page - 1) * pageSize]
   );
   return { rows, total: Number(total?.n || 0), page, pageSize };
@@ -139,7 +139,7 @@ export async function publicGalleries(opts: { category?: string; year?: number; 
 
 export async function galleryFilters() {
   const cats = await db.query<{ c: string }>(`SELECT DISTINCT g.category_az AS c FROM galleries g WHERE ${GALLERY_WHERE} AND g.category_az IS NOT NULL ORDER BY c`);
-  const years = await db.query<{ y: number }>(`SELECT DISTINCT YEAR(g.event_date) AS y FROM galleries g WHERE ${GALLERY_WHERE} AND g.event_date IS NOT NULL ORDER BY y DESC`);
+  const years = await db.query<{ y: number }>(`SELECT DISTINCT EXTRACT(YEAR FROM g.event_date)::int AS y FROM galleries g WHERE ${GALLERY_WHERE} AND g.event_date IS NOT NULL ORDER BY y DESC`);
   return { categories: cats.map((c) => c.c), years: years.map((y) => Number(y.y)) };
 }
 
@@ -166,7 +166,7 @@ export async function publicDocuments(category?: string) {
   if (category) { where += " AND d.category_az = ?"; params.push(category); }
   return db.query<{ id: number; title_az: string; slug: string; category_az: string; description_az: string | null; file_url: string; file_size: number | null; published_on: string | null; created_at: string }>(
     `SELECT d.id, d.title_az, d.slug, d.category_az, d.description_az, d.file_url, d.file_size, d.published_on, d.created_at FROM documents d WHERE ${where}
-      ORDER BY COALESCE(d.published_on, DATE(d.created_at)) DESC, d.id DESC`,
+      ORDER BY COALESCE(d.published_on, (d.created_at AT TIME ZONE 'Asia/Baku')::date) DESC, d.id DESC`,
     params
   );
 }

@@ -15,13 +15,13 @@ async function user(c, pwHash, email, first, last, roles) {
      VALUES (?, ?, ?, ?, ?, 1, 1, NOW(), NOW())`,
     [email, first, last, pwHash, roles[0]]
   );
-  for (const role of roles) await c.query("INSERT INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code = ?", [r.insertId, role]);
+  for (const role of roles) await c.query("INSERT INTO user_roles (user_id, role_id) SELECT ?::int, id FROM roles WHERE code = ?", [r.insertId, role]);
   return r.insertId;
 }
 
 /**
  * Demo məktəb strukturu yaradır və istifadəçi/obyekt ID-lərini qaytarır.
- * @param {import("mysql2/promise").Connection} c
+ * @param {Awaited<ReturnType<typeof import("./env.mjs").connect>>} c
  * @param {string} password bütün demo hesablar üçün parol (mühitdən gəlir, kodda saxlanmır)
  */
 export async function createDemoSchool(c, password, { classSuffix = "" } = {}) {
@@ -42,7 +42,7 @@ export async function createDemoSchool(c, password, { classSuffix = "" } = {}) {
 
   const subj = {};
   for (const [code, name] of [["RIY", "Riyaziyyat"], ["AZD", "Azərbaycan dili"], ["ING", "İngilis dili"], ["FIZ", "Fizika"], ["TAR", "Azərbaycan tarixi"]]) {
-    const [r] = await c.query("INSERT INTO subjects (code, name_az) VALUES (?, ?) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)", [code, name]);
+    const [r] = await c.query("INSERT INTO subjects (code, name_az) VALUES (?, ?) ON CONFLICT (code) DO UPDATE SET code = EXCLUDED.code RETURNING id", [code, name]);
     subj[code] = r.insertId;
   }
 

@@ -1,11 +1,13 @@
-// Bərpa: seçilmiş ehtiyat nüsxədən DB və storage/ bərpa olunur. Təsdiq üçün baza adını yazmaq tələb olunur.
+// Bərpa: seçilmiş ehtiyat nüsxədən public sxemi (pg_restore) və yüklənmiş fayllar bərpa olunur.
+// Təsdiq üçün server ünvanı və baza adını yazmaq tələb olunur. Bərpadan sonra `npm run db:migrate` icra edin.
 // İstifadə: npm run restore -- --from=backups/2026-11-02-10-00-00 [--test]
 import fs from "node:fs";
 import path from "node:path";
-import os from "node:os";
 import readline from "node:readline";
 import { spawn } from "node:child_process";
 import { loadEnv, dbConfig, ROOT, isTestFlag } from "./lib/env.mjs";
+import { putObject, storageTarget } from "./lib/storage.mjs";
+import { MIME_BY_EXT } from "./lib/mime.mjs";
 
 loadEnv();
 const test = isTestFlag();
@@ -16,37 +18,49 @@ if (!from) {
   process.exit(1);
 }
 const dir = path.resolve(ROOT, from);
-const sql = path.join(dir, "database.sql");
-if (!fs.existsSync(sql)) {
-  console.error(`[restore] ${sql} tapılmadı.`);
+const dumpFile = path.join(dir, "database.dump");
+if (!fs.existsSync(dumpFile)) {
+  console.error(`[restore] ${dumpFile} tapılmadı.`);
   process.exit(1);
 }
 
+const expected = `${cfg.host}/${cfg.database}`;
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const answer = await new Promise((r) => rl.question(`DİQQƏT: "${cfg.database}" bazası ehtiyat nüsxə ilə əvəz olunacaq. Təsdiq üçün baza adını yazın: `, r));
+const answer = await new Promise((r) => rl.question(`DİQQƏT: "${expected}" bazasının public sxemi ehtiyat nüsxə ilə ƏVƏZ olunacaq. Təsdiq üçün "${expected}" yazın: `, r));
 rl.close();
-if (answer.trim() !== cfg.database) {
+if (answer.trim() !== expected) {
   console.log("[restore] Ləğv edildi.");
   process.exit(0);
 }
 
-const opt = path.join(os.tmpdir(), `q205-r-${process.pid}.cnf`);
-fs.writeFileSync(opt, `[client]\nhost=${cfg.host}\nport=${cfg.port}\nuser=${cfg.user}\npassword="${cfg.password.replace(/"/g, '\\"')}"\n`, { mode: 0o600 });
-try {
-  await new Promise((resolve, reject) => {
-    const p = spawn(process.env.MYSQL_PATH || "mysql", [`--defaults-extra-file=${opt}`, "--default-character-set=utf8mb4", cfg.database], { stdio: ["pipe", "inherit", "pipe"] });
-    fs.createReadStream(sql).pipe(p.stdin);
-    let err = "";
-    p.stderr.on("data", (d) => (err += d));
-    p.on("error", (e) => reject(new Error(`mysql işə salınmadı (${e.message}). MYSQL_PATH dəyişənini təyin edin.`)));
-    p.on("close", (code) => (code === 0 ? resolve() : reject(new Error(err || `mysql kodu ${code}`))));
+const env = {
+  ...process.env,
+  PGHOST: cfg.url.hostname,
+  PGPORT: cfg.url.port || "5432",
+  PGUSER: decodeURIComponent(cfg.url.username),
+  PGPASSWORD: decodeURIComponent(cfg.url.password),
+  PGDATABASE: cfg.database,
+  PGSSLMODE: cfg.ssl ? "require" : "disable",
+};
+await new Promise((resolve, reject) => {
+  const p = spawn(process.env.PG_RESTORE_PATH || "pg_restore", ["--clean", "--if-exists", "--no-owner", "--no-privileges", "--single-transaction", `--dbname=${cfg.database}`, dumpFile], {
+    env,
+    stdio: ["ignore", "inherit", "pipe"],
   });
-} finally {
-  fs.rmSync(opt, { force: true });
-}
+  let err = "";
+  p.stderr.on("data", (d) => (err += d));
+  p.on("error", (e) => reject(new Error(`pg_restore işə salınmadı (${e.message}). PG_RESTORE_PATH təyin edin.`)));
+  p.on("close", (code) => (code === 0 ? resolve() : reject(new Error(err || `pg_restore kodu ${code}`))));
+});
+
 const storageBackup = path.join(dir, "storage");
 if (fs.existsSync(storageBackup)) {
-  const storage = path.resolve(ROOT, process.env.STORAGE_DIR || "storage");
-  fs.cpSync(storageBackup, storage, { recursive: true });
+  const store = storageTarget();
+  const files = fs.readdirSync(storageBackup, { recursive: true }).map(String).filter((f) => fs.statSync(path.join(storageBackup, f)).isFile());
+  for (const rel of files) {
+    const key = rel.split(path.sep).join("/");
+    await putObject(store, key, fs.readFileSync(path.join(storageBackup, rel)), MIME_BY_EXT[path.extname(key).slice(1).toLowerCase()] || "application/octet-stream", { upsert: true });
+  }
+  console.log(`[restore] ${files.length} fayl bərpa olundu → ${store.label}`);
 }
-console.log("[restore] Bərpa tamamlandı. Tətbiqi yenidən başladın.");
+console.log("[restore] Bərpa tamamlandı. İndi `npm run db:migrate` icra edin (RLS və rolları yoxlayır), sonra tətbiqi yenidən başladın.");

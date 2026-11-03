@@ -44,7 +44,7 @@ export async function ensureHomeworkDueReminders(userId: number, studentIds: num
   const due = await db.query<{ id: number; title: string; due_date: string }>(
     `SELECT h.id, h.title, h.due_date FROM homework h
       WHERE h.deleted_at IS NULL AND h.class_id IN (SELECT class_id FROM students WHERE id IN (?))
-        AND h.due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        AND h.due_date BETWEEN baku_today() AND baku_today() + 1
         AND NOT EXISTS (SELECT 1 FROM homework_submissions hs WHERE hs.homework_id = h.id AND hs.student_id IN (?))
         AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.user_id = ? AND n.type = 'homework_due' AND n.entity_type = 'homework' AND n.entity_id = h.id)`,
     [studentIds, studentIds, userId]

@@ -227,7 +227,7 @@ export async function editorialList(user: CurrentUser, q: { scope: "mine" | "que
     where.push(can(user, "news.publish") ? "n.status IN ('pending','approved')" : "n.status = 'pending'");
   }
   if (q.status) { where.push("n.status = ?"); params.push(q.status); }
-  if (q.search) { where.push("n.title_az LIKE ?"); params.push(`%${q.search.replace(/[%_]/g, "\\$&")}%`); }
+  if (q.search) { where.push("n.title_az ILIKE ?"); params.push(`%${q.search.replace(/[%_]/g, "\\$&")}%`); }
   const total = await db.queryOne<{ n: number }>(`SELECT COUNT(*) AS n FROM news n WHERE ${where.join(" AND ")}`, params);
   const rows = await db.query(
     `SELECT n.id, n.title_az, n.slug, n.status, n.updated_at, n.published_at, n.submitted_at, n.contains_minors, n.consent_confirmed,
@@ -277,7 +277,7 @@ export async function publishedNews(opts: { category?: string; q?: string; page?
   const where = [PUBLIC_WHERE];
   const params: unknown[] = [];
   if (opts.category) { where.push("c.slug = ?"); params.push(opts.category); }
-  if (opts.q) { where.push("(n.title_az LIKE ? OR n.summary_az LIKE ?)"); const like = `%${opts.q.replace(/[%_]/g, "\\$&")}%`; params.push(like, like); }
+  if (opts.q) { where.push("(n.title_az ILIKE ? OR n.summary_az ILIKE ?)"); const like = `%${opts.q.replace(/[%_]/g, "\\$&")}%`; params.push(like, like); }
   if (opts.excludeId) { where.push("n.id <> ?"); params.push(opts.excludeId); }
   const pageSize = opts.pageSize ?? 12;
   const page = Math.max(1, opts.page ?? 1);

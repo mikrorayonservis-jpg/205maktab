@@ -40,6 +40,9 @@ export async function api<T = unknown>(url: string, opts: { method?: string; bod
   } catch {
     /* boş cavab */
   }
+  if (res.status === 413 && !json.error) {
+    throw new ApiClientError(413, "TOO_LARGE", "Fayl çox böyükdür (maksimum 4 MB). Daha kiçik fayl seçin.");
+  }
   if (!res.ok || json.ok === false) {
     const err = json.error;
     throw new ApiClientError(res.status, err?.code || "ERROR", err?.message || "Xəta baş verdi.", err?.fields);

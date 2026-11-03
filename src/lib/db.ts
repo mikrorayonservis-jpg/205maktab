@@ -1,97 +1,126 @@
 /**
- * MySQL bağlantı hovuzu və parametrləşdirilmiş sorğu yardımçıları.
- * Bütün sorğular `?` yer tutucuları ilə göndərilir (SQL injection-a qarşı).
- * Tarixlər sətir kimi qaytarılır (dateStrings) və sessiya saat qurşağı Asia/Baku (+04:00) olur.
+ * PostgreSQL (Supabase) bağlantı hovuzu və parametrləşdirilmiş sorğu yardımçıları.
+ *
+ * Kod `?` yer tutucuları ilə yazılır; göndərilməzdən əvvəl Postgres-in `$1, $2, ...` formasına
+ * çevrilir (SQL injection-a qarşı dəyərlər həmişə ayrıca göndərilir). Massiv parametr
+ * `IN (?)` üçün siyahıya, massivlər massivi isə `VALUES ?` üçün sətirlərə açılır (mysql2 ilə eyni).
+ *
+ * Qaytarılan dəyərlər MySQL dövrü ilə eyni formadadır:
+ *  - DATE → "YYYY-MM-DD", TIMESTAMP → "YYYY-MM-DD HH:MM:SS", TIMESTAMPTZ → Bakı vaxtı ilə "YYYY-MM-DD HH:MM:SS"
+ *  - COUNT(*) (bigint) → number, NUMERIC → string
+ * Bakı (Asia/Baku) 2016-dan bəri sabit UTC+04:00-dır (yay vaxtı yoxdur).
  */
 import "server-only";
-import mysql from "mysql2/promise";
-import type { Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
+import pg from "pg";
 import { env } from "./env";
+import { toBakuTimestamp, toPg } from "./sql-params";
+
+export { toBakuTimestamp, toPg };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Row = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Params = any[];
 
-const g = globalThis as unknown as { __q205Pool?: Pool };
+pg.types.setTypeParser(pg.types.builtins.INT8, (v) => Number(v));
+pg.types.setTypeParser(pg.types.builtins.DATE, (v) => v);
+pg.types.setTypeParser(pg.types.builtins.TIMESTAMP, (v) => v.slice(0, 19));
+pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, toBakuTimestamp);
 
-export function getPool(): Pool {
+const g = globalThis as unknown as { __q205Pool?: pg.Pool };
+
+export function getPool(): pg.Pool {
   if (!g.__q205Pool) {
     const cfg = env.db;
-    const pool = mysql.createPool({
-      ...cfg,
-      charset: "utf8mb4",
-      timezone: "+04:00",
-      dateStrings: true,
-      connectionLimit: Number(process.env.DB_POOL_SIZE || 10),
-      waitForConnections: true,
-      enableKeepAlive: true,
-      supportBigNumbers: true,
-      bigNumberStrings: false,
+    const pool = new pg.Pool({
+      connectionString: cfg.url,
+      ssl: cfg.ssl,
+      max: cfg.poolSize,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
+      allowExitOnIdle: true,
     });
-    pool.on("connection", (conn) => {
-      conn.query("SET time_zone = '+04:00'");
-    });
+    pool.on("error", (err) => console.error("[db] boş bağlantı xətası:", err.message));
     g.__q205Pool = pool;
   }
   return g.__q205Pool;
 }
 
+export interface ExecResult {
+  /** INSERT ... RETURNING ilə qayıdan ilk sətrin id-si (yoxdursa 0) */
+  insertId: number;
+  affectedRows: number;
+  rows: Row[];
+}
+
 export interface Db {
   query<T = Row>(sql: string, params?: Params): Promise<T[]>;
   queryOne<T = Row>(sql: string, params?: Params): Promise<T | null>;
-  execute(sql: string, params?: Params): Promise<ResultSetHeader>;
+  execute(sql: string, params?: Params): Promise<ExecResult>;
 }
 
-function wrap(runner: Pool | PoolConnection): Db {
+type Runner = Pick<pg.Pool | pg.PoolClient, "query">;
+
+const INSERT_RE = /^\s*INSERT\b/i;
+const RETURNING_RE = /\bRETURNING\b/i;
+
+function wrap(getRunner: () => Runner): Db {
   return {
     async query<T = Row>(sql: string, params: Params = []) {
-      const [rows] = await runner.query(sql, params);
-      return rows as T[];
+      const { text, values } = toPg(sql, params);
+      const res = await getRunner().query(text, values);
+      return res.rows as T[];
     },
     async queryOne<T = Row>(sql: string, params: Params = []) {
-      const [rows] = await runner.query(sql, params);
-      const list = rows as T[];
-      return list.length ? list[0] : null;
+      const { text, values } = toPg(sql, params);
+      const res = await getRunner().query(text, values);
+      return res.rows.length ? (res.rows[0] as T) : null;
     },
     async execute(sql: string, params: Params = []) {
-      const [res] = await runner.query(sql, params);
-      return res as ResultSetHeader;
+      // MySQL insertId əvəzinə: INSERT-lərə avtomatik RETURNING * əlavə olunur
+      const stmt = INSERT_RE.test(sql) && !RETURNING_RE.test(sql) ? `${sql.trimEnd()} RETURNING *` : sql;
+      const { text, values } = toPg(stmt, params);
+      const res = await getRunner().query(text, values);
+      const first = res.rows[0] as { id?: unknown } | undefined;
+      return { insertId: first?.id != null ? Number(first.id) : 0, affectedRows: res.rowCount ?? 0, rows: res.rows };
     },
   };
 }
 
-export const db: Db = {
-  query: (sql, params) => wrap(getPool()).query(sql, params),
-  queryOne: (sql, params) => wrap(getPool()).queryOne(sql, params),
-  execute: (sql, params) => wrap(getPool()).execute(sql, params),
-} as Db;
+export const db: Db = wrap(() => getPool());
 
 /** Tranzaksiya: callback xəta atarsa ROLLBACK edilir. */
 export async function transaction<T>(fn: (tx: Db) => Promise<T>): Promise<T> {
-  const conn = await getPool().getConnection();
+  const client = await getPool().connect();
   try {
-    await conn.beginTransaction();
-    const result = await fn(wrap(conn));
-    await conn.commit();
+    await client.query("BEGIN");
+    const result = await fn(wrap(() => client));
+    await client.query("COMMIT");
     return result;
   } catch (err) {
     try {
-      await conn.rollback();
+      await client.query("ROLLBACK");
     } catch {
       /* bağlantı artıq qırılıbsa */
     }
     throw err;
   } finally {
-    conn.release();
+    client.release();
   }
 }
 
+/** Postgres: 23505 unique_violation */
 export function isDuplicateError(err: unknown): boolean {
-  return Boolean(err && typeof err === "object" && (err as { code?: string }).code === "ER_DUP_ENTRY");
+  return Boolean(err && typeof err === "object" && (err as { code?: string }).code === "23505");
 }
 
-export function isForeignKeyError(err: unknown): boolean {
+/** Postgres: yanlış formatlı və ya diapazondan kənar giriş dəyəri (məs. "abc" rəqəm sütununa) */
+export function isInvalidInputError(err: unknown): boolean {
   const code = err && typeof err === "object" ? (err as { code?: string }).code : "";
-  return code === "ER_ROW_IS_REFERENCED_2" || code === "ER_NO_REFERENCED_ROW_2";
+  return code === "22P02" || code === "22007" || code === "22008" || code === "22003" || code === "23514";
+}
+
+/** Postgres: 23503 foreign_key_violation */
+export function isForeignKeyError(err: unknown): boolean {
+  return Boolean(err && typeof err === "object" && (err as { code?: string }).code === "23503");
 }

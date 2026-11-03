@@ -16,7 +16,7 @@ import { notifyRoles } from "./notifications";
 const IDENT = /^[a-z_][a-z0-9_]*$/;
 function ident(name: string): string {
   if (!IDENT.test(name)) throw new Error(`Yanlış identifikator: ${name}`);
-  return `\`${name}\``;
+  return `"${name}"`;
 }
 
 const emptyToNull = (v: unknown) => (v === "" || v === undefined ? null : v);
@@ -95,7 +95,7 @@ function whereClause(def: ResourceDef, p: Pick<ListParams, "q" | "filters">) {
   if (def.softDelete) where.push("deleted_at IS NULL");
   if (p.q && def.search.length) {
     const like = `%${p.q.replace(/[%_\\]/g, "\\$&")}%`;
-    where.push(`(${def.search.map((c) => `${ident(c)} LIKE ?`).join(" OR ")})`);
+    where.push(`(${def.search.map((c) => `${ident(c)}::text ILIKE ?`).join(" OR ")})`);
     def.search.forEach(() => params.push(like));
   }
   for (const [k, v] of Object.entries(p.filters)) {
@@ -183,12 +183,12 @@ async function afterSave(def: ResourceDef, id: number, data: Record<string, unkn
     const year = await tx.queryOne<{ school_year_id: number }>("SELECT school_year_id FROM classes WHERE id = ?", [data.class_id]);
     if (year) {
       await tx.execute("UPDATE students SET school_year_id = ? WHERE id = ?", [year.school_year_id, id]);
-      await tx.execute("INSERT IGNORE INTO class_students (class_id, student_id, school_year_id) VALUES (?, ?, ?)", [data.class_id, id, year.school_year_id]);
+      await tx.execute("INSERT INTO class_students (class_id, student_id, school_year_id) VALUES (?, ?, ?) ON CONFLICT DO NOTHING", [data.class_id, id, year.school_year_id]);
     }
   }
   if (def.key === "classes" && data.class_teacher_id) {
     const t = await tx.queryOne<{ user_id: number | null }>("SELECT user_id FROM teachers WHERE id = ?", [data.class_teacher_id]);
-    if (t?.user_id) await tx.execute("INSERT IGNORE INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code = 'class_teacher'", [t.user_id]);
+    if (t?.user_id) await tx.execute("INSERT INTO user_roles (user_id, role_id) SELECT ?::int, id FROM roles WHERE code = 'class_teacher' ON CONFLICT DO NOTHING", [t.user_id]);
   }
   void user;
 }

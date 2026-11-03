@@ -12,3 +12,4 @@ _backup/
 tsconfig.tsbuildinfo
 next-env.d.ts
 test-results/
+.vercel/

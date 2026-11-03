@@ -43,7 +43,7 @@ export async function createSession(userId: number, meta: { ip: string; userAgen
   const token = randomToken();
   await db.execute(
     `INSERT INTO sessions (user_id, token_hash, expires_at, ip_address, user_agent, last_seen_at)
-     VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? DAY), ?, ?, NOW())`,
+     VALUES (?, ?, NOW() + make_interval(days => ?), ?, ?, NOW())`,
     [userId, sha256(token), env.sessionDays, meta.ip, meta.userAgent.slice(0, 400)]
   );
   return token;

@@ -1,0 +1,5 @@
+# Supabase CLI konfiqurasiyası (istəyə bağlı: lokal `supabase start` və ya `supabase link` üçün).
+# Bu layihədə miqrasiyaların əsas icra yolu `npm run db:migrate`-dir (public.schema_migrations cədvəlində izlənir)
+# və ya ilkin quraşdırma üçün supabase/setup.sql. Eyni bazada `supabase db push` ilə QARIŞDIRMAYIN —
+# CLI öz izləmə cədvəlini (supabase_migrations) istifadə edir və miqrasiyaları təkrar icra etməyə çalışar.
+project_id = "skijahzkjlzhejrzomai"

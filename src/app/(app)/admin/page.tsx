@@ -18,8 +18,8 @@ export default async function AdminHome() {
     one("SELECT COUNT(*) AS n FROM teachers WHERE deleted_at IS NULL"),
     one("SELECT COUNT(*) AS n FROM news WHERE status IN ('pending','approved') AND deleted_at IS NULL"),
     one("SELECT COUNT(*) AS n FROM news WHERE status = 'published' AND deleted_at IS NULL"),
-    one("SELECT COUNT(*) AS n FROM events WHERE deleted_at IS NULL AND start_datetime >= NOW()"),
-    one("SELECT COUNT(*) AS n FROM login_attempts WHERE success = 0 AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"),
+    one("SELECT COUNT(*) AS n FROM events WHERE deleted_at IS NULL AND start_datetime >= baku_now()"),
+    one("SELECT COUNT(*) AS n FROM login_attempts WHERE success = 0 AND created_at >= NOW() - INTERVAL '24 hours'"),
   ]);
   const recent = can(u, "audit.view")
     ? await db.query("SELECT a.id, a.action, a.entity_type, a.created_at, u.email FROM audit_logs a LEFT JOIN users u ON u.id = a.user_id ORDER BY a.id DESC LIMIT 8")

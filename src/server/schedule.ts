@@ -24,7 +24,7 @@ export interface LessonRow {
 
 const BASE = `SELECT l.id, l.class_id, c.name AS class_name, l.subject_id, s.name_az AS subject_name, l.teacher_id,
                      CONCAT(t.first_name, ' ', t.last_name) AS teacher_name, l.day_of_week, l.period,
-                     TIME_FORMAT(l.start_time, '%H:%i') AS start_time, TIME_FORMAT(l.end_time, '%H:%i') AS end_time, l.room
+                     to_char(l.start_time, 'HH24:MI') AS start_time, to_char(l.end_time, 'HH24:MI') AS end_time, l.room
                 FROM lessons l
                 JOIN classes c ON c.id = l.class_id
                 JOIN subjects s ON s.id = l.subject_id
@@ -66,7 +66,7 @@ export async function findConflicts(input: LessonInput, yearId: number, excludeI
     `${BASE}
       WHERE l.school_year_id = ? AND l.day_of_week = ? AND l.id <> ?
         AND l.start_time < ? AND l.end_time > ?
-        AND (l.teacher_id = ? OR l.class_id = ? OR (? IS NOT NULL AND l.room = ?))`,
+        AND (l.teacher_id = ? OR l.class_id = ? OR (?::text IS NOT NULL AND l.room = ?))`,
     [yearId, input.dayOfWeek, excludeId ?? 0, input.endTime, input.startTime, input.teacherId, input.classId, input.room ?? null, input.room ?? null]
   );
   const out: Conflict[] = [];
@@ -104,7 +104,7 @@ export async function createLesson(userId: number, input: LessonInput, req?: Nex
       [input.classId, input.subjectId, input.teacherId, year.id, input.dayOfWeek, input.period, input.startTime, input.endTime, input.room ?? null]
     );
     await tx.execute(
-      `INSERT IGNORE INTO class_subjects (class_id, subject_id, teacher_id, school_year_id) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO class_subjects (class_id, subject_id, teacher_id, school_year_id) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING`,
       [input.classId, input.subjectId, input.teacherId, year.id]
     );
     await audit({ userId, action: "lesson.create", entityType: "lesson", entityId: res.insertId, newValues: input, req }, tx);
@@ -143,7 +143,7 @@ export async function allConflicts() {
   const year = await requireActiveYear();
   return db.query<{ a_id: number; b_id: number; teacher_name: string; day_of_week: number; class_a: string; class_b: string; start_a: string; start_b: string }>(
     `SELECT l1.id AS a_id, l2.id AS b_id, CONCAT(t.first_name, ' ', t.last_name) AS teacher_name, l1.day_of_week,
-            c1.name AS class_a, c2.name AS class_b, TIME_FORMAT(l1.start_time, '%H:%i') AS start_a, TIME_FORMAT(l2.start_time, '%H:%i') AS start_b
+            c1.name AS class_a, c2.name AS class_b, to_char(l1.start_time, 'HH24:MI') AS start_a, to_char(l2.start_time, 'HH24:MI') AS start_b
        FROM lessons l1
        JOIN lessons l2 ON l1.teacher_id = l2.teacher_id AND l1.day_of_week = l2.day_of_week AND l1.school_year_id = l2.school_year_id
                        AND l1.id < l2.id AND l1.start_time < l2.end_time AND l2.start_time < l1.end_time
@@ -158,6 +158,6 @@ export async function allConflicts() {
 
 export async function bellTimes() {
   return db.query<{ shift: number; period: number; start_time: string; end_time: string }>(
-    "SELECT shift, period, TIME_FORMAT(start_time, '%H:%i') AS start_time, TIME_FORMAT(end_time, '%H:%i') AS end_time FROM bell_times ORDER BY shift, period"
+    "SELECT shift, period, to_char(start_time, 'HH24:MI') AS start_time, to_char(end_time, 'HH24:MI') AS end_time FROM bell_times ORDER BY shift, period"
   );
 }

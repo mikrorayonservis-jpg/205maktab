@@ -85,7 +85,7 @@ async function loadHomework(hwId: number) {
 
 export async function canViewHomework(user: CurrentUser, hw: { class_id: number }): Promise<boolean> {
   const scope = classScopeSql(user, "homework.view_all", "h");
-  const row = await db.queryOne(`SELECT 1 AS x FROM (SELECT ? AS class_id) h WHERE ${scope.sql}`, [hw.class_id, ...scope.params]);
+  const row = await db.queryOne(`SELECT 1 AS x FROM (SELECT ?::int AS class_id) h WHERE ${scope.sql}`, [hw.class_id, ...scope.params]);
   return Boolean(row);
 }
 
@@ -133,7 +133,7 @@ export async function listHomework(user: CurrentUser, q: { classId?: number; upc
   const where = ["h.deleted_at IS NULL", scope.sql];
   const params: unknown[] = [...scope.params];
   if (q.classId) { where.push("h.class_id = ?"); params.push(q.classId); }
-  if (q.upcoming) where.push("h.due_date >= CURDATE()");
+  if (q.upcoming) where.push("h.due_date >= baku_today()");
   if (q.mine && user.teacherId) { where.push("h.teacher_id = ?"); params.push(user.teacherId); }
   const studentIds = await ownStudentIds(user);
   params.push(q.limit ?? 100);
@@ -165,7 +165,7 @@ export async function updateHomework(user: CurrentUser, hwId: number, input: z.i
     await tx.execute("UPDATE homework SET title = ?, description = ?, class_id = ?, subject_id = ?, due_date = ? WHERE id = ?", [
       input.title, input.description ?? null, input.classId, input.subjectId, input.dueDate, hwId,
     ]);
-    for (const f of input.fileIds) await tx.execute("INSERT IGNORE INTO homework_files (homework_id, file_id) VALUES (?, ?)", [hwId, f]);
+    for (const f of input.fileIds) await tx.execute("INSERT INTO homework_files (homework_id, file_id) VALUES (?, ?) ON CONFLICT DO NOTHING", [hwId, f]);
     await audit({ userId: user.id, action: "homework.update", entityType: "homework", entityId: hwId, oldValues: hw, newValues: input, req }, tx);
   });
 }
@@ -203,7 +203,7 @@ export async function listSubmissions(user: CurrentUser, hwId: number) {
   return db.query(
     `SELECT s.id AS student_id, CONCAT(s.last_name, ' ', s.first_name) AS student_name, hs.id, hs.answer_text, hs.file_id,
             f.original_name AS file_name, hs.submitted_at, hs.grade, hs.feedback, hs.status,
-            (hs.submitted_at > CONCAT(?, ' 23:59:59')) AS is_late
+            (hs.submitted_at >= ((?::date + 1)::timestamp AT TIME ZONE 'Asia/Baku')) AS is_late
        FROM students s
        LEFT JOIN homework_submissions hs ON hs.student_id = s.id AND hs.homework_id = ?
        LEFT JOIN files f ON f.id = hs.file_id

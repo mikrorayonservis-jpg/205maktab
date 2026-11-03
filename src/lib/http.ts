@@ -9,7 +9,7 @@ import { ZodError, type ZodTypeAny, type z } from "zod";
 import { getCurrentUser, type CurrentUser } from "./auth/session";
 import { can, type Permission } from "./auth/permissions";
 import { verifyCsrf } from "./csrf";
-import { isDuplicateError, isForeignKeyError } from "./db";
+import { isDuplicateError, isForeignKeyError, isInvalidInputError } from "./db";
 
 export class AppError extends Error {
   constructor(
@@ -61,6 +61,9 @@ export function fail(err: unknown) {
       { ok: false, error: { code: "IN_USE", message: "Əlaqəli məlumatlar olduğu üçün əməliyyat mümkün deyil." } },
       { status: 409 }
     );
+  }
+  if (isInvalidInputError(err)) {
+    return NextResponse.json({ ok: false, error: { code: "BAD_REQUEST", message: "Göndərilən məlumat düzgün deyil." } }, { status: 400 });
   }
   console.error("[api]", err);
   return NextResponse.json(

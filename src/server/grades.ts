@@ -193,7 +193,7 @@ export async function studentGradeSummary(studentId: number) {
     [studentId, year.id]
   );
   const byMonth = await db.query<{ ym: string; avg: number; count: number }>(
-    `SELECT DATE_FORMAT(g.date, '%Y-%m') AS ym, ROUND(AVG(g.grade_value), 2) AS avg, COUNT(*) AS count
+    `SELECT to_char(g.date, 'YYYY-MM') AS ym, ROUND(AVG(g.grade_value), 2) AS avg, COUNT(*) AS count
        FROM grades g WHERE g.student_id = ? AND g.deleted_at IS NULL AND g.school_year_id = ?
       GROUP BY ym ORDER BY ym`,
     [studentId, year.id]

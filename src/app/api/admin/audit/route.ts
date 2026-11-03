@@ -18,11 +18,11 @@ export const GET = route(
     );
     const where = ["1=1"];
     const params: unknown[] = [];
-    if (q.action) { where.push("a.action LIKE ?"); params.push(`${q.action.replace(/[%_\\]/g, "\\$&")}%`); }
+    if (q.action) { where.push("a.action ILIKE ?"); params.push(`${q.action.replace(/[%_\\]/g, "\\$&")}%`); }
     if (q.entity) { where.push("a.entity_type = ?"); params.push(q.entity); }
     if (q.userEmail) { where.push("u.email = ?"); params.push(q.userEmail.toLowerCase()); }
-    if (q.from) { where.push("a.created_at >= ?"); params.push(`${q.from} 00:00:00`); }
-    if (q.to) { where.push("a.created_at <= ?"); params.push(`${q.to} 23:59:59`); }
+    if (q.from) { where.push("a.created_at >= ?"); params.push(`${q.from} 00:00:00+04:00`); }
+    if (q.to) { where.push("a.created_at <= ?"); params.push(`${q.to} 23:59:59+04:00`); }
     const base = `FROM audit_logs a LEFT JOIN users u ON u.id = a.user_id WHERE ${where.join(" AND ")}`;
     const limit = q.format === "csv" ? 20000 : 50;
     const rows = await db.query(

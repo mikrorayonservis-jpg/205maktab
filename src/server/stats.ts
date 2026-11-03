@@ -15,7 +15,7 @@ export async function schoolSummary() {
   const users = await one("SELECT COUNT(*) AS n FROM users WHERE deleted_at IS NULL AND is_active = 1");
   const pendingNews = await one("SELECT COUNT(*) AS n FROM news WHERE status = 'pending' AND deleted_at IS NULL");
   const attendance = await db.queryOne<{ total: number; absent: number; late: number }>(
-    "SELECT COUNT(*) AS total, SUM(status IN ('excused','unexcused')) AS absent, SUM(status = 'late') AS late FROM attendance WHERE date BETWEEN ? AND ?",
+    "SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE status IN ('excused','unexcused')) AS absent, COUNT(*) FILTER (WHERE status = 'late') AS late FROM attendance WHERE date BETWEEN ? AND ?",
     [from, today]
   );
   const gradeAvg = year
@@ -39,8 +39,9 @@ export async function schoolSummary() {
       )
     : [];
   const weekly = await db.query<{ wk: string; absent: number; total: number }>(
-    `SELECT DATE_FORMAT(DATE_SUB(date, INTERVAL WEEKDAY(date) DAY), '%Y-%m-%d') AS wk, SUM(status IN ('excused','unexcused')) AS absent, COUNT(*) AS total
-       FROM attendance WHERE date >= ? GROUP BY wk ORDER BY wk`,
+    `SELECT to_char(a.date - (EXTRACT(ISODOW FROM a.date)::int - 1), 'YYYY-MM-DD') AS wk,
+            COUNT(*) FILTER (WHERE a.status IN ('excused','unexcused')) AS absent, COUNT(*) AS total
+       FROM attendance a WHERE a.date >= ? GROUP BY wk ORDER BY wk`,
     [addDays(today, -84)]
   );
   return {

@@ -101,10 +101,10 @@ const CATEGORIES = [
 async function run() {
   const c = await connect();
   for (const [slug, p] of Object.entries(PAGES)) {
-    await c.query("INSERT IGNORE INTO pages (slug, title_az, content_md) VALUES (?, ?, ?)", [slug, p.title, p.md]);
+    await c.query("INSERT INTO pages (slug, title_az, content_md) VALUES (?, ?, ?) ON CONFLICT DO NOTHING", [slug, p.title, p.md]);
   }
   for (const [name, slug] of CATEGORIES) {
-    await c.query("INSERT IGNORE INTO news_categories (name_az, slug) VALUES (?, ?)", [name, slug]);
+    await c.query("INSERT INTO news_categories (name_az, slug) VALUES (?, ?) ON CONFLICT DO NOTHING", [name, slug]);
   }
   const [[{ n: ach }]] = await c.query("SELECT COUNT(*) AS n FROM achievements");
   if (Number(ach) === 0) {

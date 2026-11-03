@@ -1,11 +1,18 @@
 /**
  * Fayl yükləmələri: ölçü limiti, "magic bytes" ilə MIME yoxlaması, şəkillərin WebP-yə çevrilməsi
  * (EXIF/GPS metadata silinir), ictimai və şəxsi saxlama. Fayllar heç vaxt public/ qovluğuna yazılmır.
+ *
+ * Saxlama yeri:
+ *  - SUPABASE_URL (və ya NEXT_PUBLIC_SUPABASE_URL) + SUPABASE_SECRET_KEY təyin edilibsə → Supabase Storage
+ *    (şəxsi bucket; fayllar yalnız tətbiqin /media və /api/files marşrutları ilə, icazə yoxlanaraq verilir);
+ *  - əks halda → lokal STORAGE_DIR qovluğu (development). Vercel-də lokal disk müvəqqətidir, ona görə
+ *    orada Supabase Storage konfiqurasiyası olmadan yükləmə qəbul edilmir.
  */
 import "server-only";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { db } from "./db";
 import { env } from "./env";
 import { Errors } from "./http";
@@ -13,11 +20,92 @@ import { Errors } from "./http";
 export type FileKind = "image" | "pdf" | "document";
 export type Visibility = "public" | "private";
 
+/** Vercel funksiyalarının sorğu/cavab gövdəsi ~4.5 MB ilə məhdudlaşır. */
+const PLATFORM_BODY_LIMIT = process.env.VERCEL ? 4 * 1024 * 1024 : Infinity;
+
 export const LIMITS = {
-  image: 8 * 1024 * 1024,
-  pdf: 15 * 1024 * 1024,
-  document: 10 * 1024 * 1024,
+  image: Math.min(8 * 1024 * 1024, PLATFORM_BODY_LIMIT),
+  pdf: Math.min(15 * 1024 * 1024, PLATFORM_BODY_LIMIT),
+  document: Math.min(10 * 1024 * 1024, PLATFORM_BODY_LIMIT),
 };
+
+/** Bu ölçüdən böyük fayllar funksiya vasitəsilə deyil, qısamüddətli imzalı keçidlə verilir. */
+export const PROXY_MAX_BYTES = 4 * 1024 * 1024;
+
+const g = globalThis as unknown as { __q205Supabase?: SupabaseClient };
+
+export function usesSupabaseStorage(): boolean {
+  return Boolean(env.supabase.url && env.supabase.secretKey);
+}
+
+/** Yalnız serverdə istifadə olunan Supabase klienti (secret key). Bir dəfə yaradılır. */
+function supabaseAdmin(): SupabaseClient {
+  if (!g.__q205Supabase) {
+    g.__q205Supabase = createClient(env.supabase.url, env.supabase.secretKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    });
+  }
+  return g.__q205Supabase;
+}
+
+function assertKey(storageKey: string) {
+  if (!/^(public|private)\/[A-Za-z0-9/_\-.]+$/.test(storageKey) || storageKey.includes("..")) {
+    throw Errors.badRequest("Fayl yolu yanlışdır.");
+  }
+}
+
+async function writeObject(storageKey: string, data: Buffer, mime: string) {
+  assertKey(storageKey);
+  if (usesSupabaseStorage()) {
+    const { error } = await supabaseAdmin().storage.from(env.supabase.bucket).upload(storageKey, data, { contentType: mime, upsert: false });
+    if (error) throw new Error(`[storage] yükləmə alınmadı: ${error.message}`);
+    return;
+  }
+  if (process.env.VERCEL) {
+    throw new Error("[storage] Vercel-də SUPABASE_SECRET_KEY və SUPABASE_URL təyin edilməyib — fayllar saxlanıla bilməz.");
+  }
+  const full = resolveStoragePath(storageKey);
+  await fs.mkdir(path.dirname(full), { recursive: true });
+  await fs.writeFile(full, data, { flag: "wx" });
+}
+
+async function removeObject(storageKey: string) {
+  try {
+    if (usesSupabaseStorage()) await supabaseAdmin().storage.from(env.supabase.bucket).remove([storageKey]);
+    else await fs.unlink(resolveStoragePath(storageKey));
+  } catch {
+    /* təmizləmə uğursuz olsa da əsas xəta qaytarılır */
+  }
+}
+
+/** Faylın məzmunu; tapılmasa null. */
+export async function readObject(storageKey: string): Promise<Buffer | null> {
+  assertKey(storageKey);
+  if (usesSupabaseStorage()) {
+    const { data, error } = await supabaseAdmin().storage.from(env.supabase.bucket).download(storageKey);
+    if (error || !data) return null;
+    return Buffer.from(await data.arrayBuffer());
+  }
+  try {
+    return await fs.readFile(resolveStoragePath(storageKey));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Böyük fayllar üçün qısamüddətli (60 san.) imzalı keçid. Yalnız giriş hüququ yoxlandıqdan sonra çağırılır.
+ * Lokal saxlamada null qaytarır (fayl birbaşa verilir).
+ */
+export async function signedDownloadUrl(storageKey: string, downloadName?: string): Promise<string | null> {
+  assertKey(storageKey);
+  if (!usesSupabaseStorage()) return null;
+  const { data, error } = await supabaseAdmin()
+    .storage.from(env.supabase.bucket)
+    .createSignedUrl(storageKey, 60, downloadName ? { download: downloadName } : undefined);
+  if (error || !data) return null;
+  return data.signedUrl;
+}
 
 interface Detected {
   mime: string;
@@ -124,15 +212,19 @@ export async function storeUpload(
   const now = new Date();
   const dir = `${opts.visibility}/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}`;
   const storageKey = `${dir}/${crypto.randomBytes(16).toString("hex")}.${ext}`;
-  const full = resolveStoragePath(storageKey);
-  await fs.mkdir(path.dirname(full), { recursive: true });
-  await fs.writeFile(full, buf, { flag: "wx" });
+  await writeObject(storageKey, buf, mime);
 
-  const res = await db.execute(
-    `INSERT INTO files (storage_key, original_name, mime_type, size_bytes, width, height, visibility, purpose, owner_user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [storageKey, originalName, mime, buf.length, width, height, opts.visibility, opts.purpose.slice(0, 50), opts.ownerUserId]
-  );
+  let res;
+  try {
+    res = await db.execute(
+      `INSERT INTO files (storage_key, original_name, mime_type, size_bytes, width, height, visibility, purpose, owner_user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [storageKey, originalName, mime, buf.length, width, height, opts.visibility, opts.purpose.slice(0, 50), opts.ownerUserId]
+    );
+  } catch (err) {
+    await removeObject(storageKey); // qeydsiz (yetim) fayl qalmasın
+    throw err;
+  }
   return {
     id: res.insertId,
     url: opts.visibility === "public" ? publicUrl(storageKey) : `/api/files/${res.insertId}`,

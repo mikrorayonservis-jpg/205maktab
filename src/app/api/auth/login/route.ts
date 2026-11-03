@@ -34,7 +34,7 @@ export const POST = route(async ({ req }) => {
   if (!valid || Number(user.locked) || !user.is_active) {
     if (!valid) {
       await db.execute(
-        `UPDATE users SET locked_until = IF(failed_login_count + 1 >= 10, DATE_ADD(NOW(), INTERVAL 15 MINUTE), locked_until),
+        `UPDATE users SET locked_until = CASE WHEN failed_login_count + 1 >= 10 THEN NOW() + INTERVAL '15 minutes' ELSE locked_until END,
            failed_login_count = failed_login_count + 1 WHERE id = ?`,
         [user.id]
       );

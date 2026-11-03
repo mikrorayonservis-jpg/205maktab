@@ -35,7 +35,7 @@ if (exists) {
   } catch (e) {
     await c.rollback();
     await c.end();
-    console.error("[seed:dev] Xəta — heç bir dəyişiklik saxlanmadı:", e.sqlMessage || e.message);
+    console.error("[seed:dev] Xəta — heç bir dəyişiklik saxlanmadı:", e.message);
     process.exit(1);
   }
   console.log("[seed:dev] Demo məktəb yaradıldı. Hesablar: admin@demo.local, direktor@demo.local, muellim1..3@demo.local, sagird1..3@demo.local, valideyn1..2@demo.local, redaktor@demo.local, bas.redaktor@demo.local, muellif@demo.local");

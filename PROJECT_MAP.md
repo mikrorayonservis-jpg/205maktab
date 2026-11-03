@@ -7,7 +7,7 @@
 
 ## 1. Overview & objectives
 
-A **school platform** for *Binəqədi rayonu Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi* (Baku). Not a commercial website. Three systems in one Next.js app, one domain, one auth system, one MySQL database:
+A **school platform** for *Binəqədi rayonu Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi* (Baku). Not a commercial website. Three systems in one Next.js app, one domain, one auth system, one PostgreSQL (Supabase) database:
 
 | System | Purpose |
 |---|---|
@@ -26,12 +26,13 @@ UI language: **Azerbaijani only** (dates DD.MM.YYYY, 24h, Asia/Baku). Real schoo
 | Framework | Next.js **15.5.28** App Router, React 19.0.0, TypeScript 5 (strict) |
 | Styling | Tailwind CSS 4 (`@tailwindcss/postcss`), CSS variables in `src/app/globals.css`, light/dark via `next-themes` (class) |
 | Icons | `lucide-react` |
-| DB | MySQL **8.4** (Windows service `MySQL84` on dev machine), driver `mysql2/promise`, raw parameterized SQL (no ORM) |
+| DB | **PostgreSQL on Supabase** (since 03.11.2026; before: MySQL 8.4), driver `pg`, raw parameterized SQL (no ORM). `?` placeholders converted to `$n` in `src/lib/db.ts` / `src/lib/sql-params.ts` |
+| Files | Supabase Storage private bucket `school-files` (`@supabase/supabase-js`, server-only secret key); local `STORAGE_DIR` fallback in dev |
 | Validation | `zod` 3 (Azerbaijani error map in `src/lib/validation.ts`) |
 | Passwords | `@node-rs/argon2` (Argon2id, m=19456, t=2, p=1) |
 | Images | `sharp` (re-encode to WebP, strip EXIF) |
 | Mail | `nodemailer` (dynamic import; SMTP optional) |
-| Tests | `node:test` (unit with `--experimental-strip-types`; integration against real MySQL + `next start`) |
+| Tests | `node:test` (unit with `--experimental-strip-types`; integration against real Postgres (`DATABASE_URL_TEST`) + `next start`; 40 tests incl. `05-smoke` page/CRUD sweep) |
 | No | ORM, Redis, queue, CI, Docker, git repository (⚠️ folder is not under version control) |
 
 Runtime environment (dev): Windows 10/11, project in **OneDrive** folder (⚠️ see §11), Node 22.
@@ -71,7 +72,8 @@ src/
 database/migrations/  001–012 *.sql (database/seeds/ is empty)
 scripts/   db-migrate, admin-create, seed-content, import-newspaper, seed-dev, backup, restore, lib/{env,demo-data}
 tests/     unit/ (3 files) · integration/ (run.mjs, helpers.mjs, 01-auth, 02-isolation, 03-features)
-tools/     verify-windows.bat, grant-test-db.ps1 (MySQL init-file grant helper)
+tools/     verify-windows.bat, grant-test-db.ps1 (MySQL-era helpers, obsolete)
+supabase/  migrations/ (Postgres schema), seed.sql + setup.sql (generated), storage.sql, README.md
 docs/      architecture, api, deployment (+backup/restore), security, testing, analysis, PRODUCTION_CHECKLIST
 public/images/  logo-64/160.png, mekteb-bina.webp, og-default.jpg
 storage/   Uploaded files (gitignored). storage-test/ used by integration tests.
@@ -80,7 +82,7 @@ storage/   Uploaded files (gitignored). storage-test/ used by integration tests.
 ## 4. Architecture & request flow
 
 ```
-Browser → middleware.ts (no DB) ─┬→ Server Component page → src/server/* → MySQL
+Browser → middleware.ts (no DB) ─┬→ Server Component page → src/server/* → Postgres (Supabase pooler)
                                  └→ /api/* → route() wrapper (src/lib/http.ts):
                                       CSRF+Origin (mutations) → getCurrentUser() (DB session)
                                       → permission check (RBAC) → zod parse → service → audit → JSON
@@ -90,7 +92,9 @@ Browser → middleware.ts (no DB) ─┬→ Server Component page → src/server
 - Authorization denial on pages → `notFound()` (404, hides existence). ⚠️ This requires **no `loading.tsx`** in `(app)`/`(site)` — streaming would turn 404 into 200 (fixed 02.11.2026; do not re-add loading.tsx above protected pages).
 - All pages are dynamic (root layout reads `headers()` for nonce).
 
-## 5. Database (MySQL, utf8mb4_unicode_ci, InnoDB, session time_zone +04:00, `dateStrings: true`)
+## 5. Database (PostgreSQL/Supabase — schema in `supabase/migrations/`, see `supabase/README.md`)
+
+> 03.11.2026: ported 1:1 from MySQL (`database/migrations/` = frozen history). Values keep the MySQL-era shape: DATE/TIMESTAMP as strings, timestamptz rendered in Baku time, flags `smallint` 0/1, `COUNT` as number. RLS on every table with no policies (Data API closed). Tracking table `schema_migrations` (name + checksum).
 
 44 tables + view `schedule_conflicts` + `migrations` (with checksum). Groups and key relations:
 
@@ -105,7 +109,7 @@ Browser → middleware.ts (no DB) ─┬→ Server Component page → src/server
 | Media & content | `events`, `galleries` (+consent flags, is_published), `gallery_images`, `gallery_videos` (YouTube/Vimeo id), `documents` (category code, file_id), `files` (storage_key, visibility public/private, purpose, owner), `leadership`, `achievements`, `useful_links`, `pages` (markdown by slug), `site_settings` |
 | System | `notifications` (per user, entity refs), `audit_logs` (old/new JSON, IP, UA) |
 
-Migrations: 001–008 = v1 baseline (re-run idempotently each time because the v1 runner skipped statements — see §11); 009–012 = v2. Runner tolerates "already exists" errors (1050/1060/1061/1091/1826/1022).
+Migrations: `supabase/migrations/0001–0008` (Postgres; `npm run db:migrate` or one-shot `supabase/setup.sql`). Each runs in a transaction; the runner refuses edited applied files and auto-enables RLS on any table missing it. `schedule_conflicts` view was not ported (unused by code). MySQL history: `database/migrations/001–012`.
 
 ## 6. Roles & permission matrix (from `src/config/rbac.json`)
 
@@ -172,10 +176,10 @@ Roles: SA super_admin · ScA school_admin · Dir director · Dep deputy_director
 
 ## 9. Deployment & hosting configuration
 
-- Dev: `npm run dev` (runs `npm run clean` first via `predev` — OneDrive workaround). MySQL 8.4 local (`mysql_start.bat` / service `MySQL84`).
-- Production (documented, ❓ not yet deployed): `docs/deployment/DEPLOYMENT.md` — Linux VPS (systemd + nginx) or Windows (NSSM/pm2 + IIS). `BUILD_STANDALONE=1` enables `output: "standalone"`. HTTPS required; `TRUST_PROXY=1` only behind a reverse proxy.
-- Env vars (names only): `NODE_ENV, SITE_URL, DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, DB_NAME_TEST, DB_POOL_SIZE, STORAGE_DIR, SESSION_TTL_DAYS, PASSWORD_RESET_TTL_MINUTES, TRUST_PROXY, SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, MAIL_FROM, BACKUP_DIR, BACKUP_KEEP, MYSQLDUMP_PATH, MYSQL_PATH`. Current `.env` has **no SMTP_* keys**.
-- Backup: `npm run backup` (mysqldump via temp option file + storage copy, retention `BACKUP_KEEP`), `npm run restore -- --from=...` (asks DB name confirmation). ❓ Not yet executed on the real machine.
+- Dev: `npm run dev` (runs `npm run clean` first via `predev` — OneDrive workaround). Database: `DATABASE_URL` (Supabase or local Postgres). Deployed on Vercel: `docs/deployment/SUPABASE_VERCEL.md`.
+- Production: Vercel `205maktab-ten.vercel.app` (was 500 until DB configured — see SUPABASE_VERCEL.md). Self-hosting alternative: `docs/deployment/DEPLOYMENT.md` — Linux VPS (systemd + nginx) or Windows (NSSM/pm2 + IIS). `BUILD_STANDALONE=1` enables `output: "standalone"`. HTTPS required; `TRUST_PROXY=1` only behind a reverse proxy.
+- Env vars (names only): `NODE_ENV, SITE_URL, DATABASE_URL, DATABASE_CA_CERT, DATABASE_SSL, DB_POOL_SIZE, DATABASE_URL_TEST, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (unused), SUPABASE_SECRET_KEY, SUPABASE_STORAGE_BUCKET, STORAGE_DIR, SESSION_TTL_DAYS, PASSWORD_RESET_TTL_MINUTES, TRUST_PROXY, SMTP_*, MAIL_FROM, BACKUP_DIR, BACKUP_KEEP, PG_DUMP_PATH, PG_RESTORE_PATH, MYSQL_* (copy tool only)`. Secrets: DATABASE_URL, SUPABASE_SECRET_KEY, SMTP_PASSWORD — never `NEXT_PUBLIC_`.
+- Backup: `npm run backup` (pg_dump custom format of `public` + copy of the Storage bucket, retention `BACKUP_KEEP`), `npm run restore -- --from=...` (pg_restore; asks `host/database` confirmation). One-time MySQL → Postgres copy: `npm run db:copy-mysql` (dry run) / `-- --apply`, then `npm run storage:upload`. ❓ Not yet executed on the real machine.
 
 ## 10. Implementation status
 
@@ -220,6 +224,9 @@ Verification evidence (02.11.2026, on the Windows machine): `tsc` 0 errors · un
 | 11 | Low | `experimental.serverActions` config unused; `news_authors` table unused; `users.role` duplicate of `user_roles` | Tech debt |
 | 12 | Info | Grades use one 2–5 scale for all types (KSQ/BSQ not percentage) | Assumption — confirm with school |
 | 13 | Info | Parent with children in different classes sees no "today's lessons" widget | `dashboard/page.tsx` |
+| 14 | Medium | Vercel: uploads capped at 4 MB (function body limit 4.5 MB); larger needs direct signed uploads to Storage | `src/lib/storage.ts` LIMITS |
+| 15 | Medium | Supabase Auth sign-ups were open (unused by app; no data access) — disable in dashboard | SUPABASE_VERCEL.md step 2 |
+| 16 | Info | Vercel functions default to `iad1`; set region to match Supabase to avoid per-query transatlantic latency | SUPABASE_VERCEL.md step 5 |
 
 Not inspectable from this session: live database contents (users, existing rows), the user's MySQL configuration, production hosting (none yet), visual rendering in browsers.
 

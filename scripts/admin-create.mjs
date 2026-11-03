@@ -54,9 +54,9 @@ async function run() {
       );
       userId = res.insertId;
     }
-    await conn.query("INSERT IGNORE INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code = 'super_admin'", [userId]);
+    await conn.query("INSERT INTO user_roles (user_id, role_id) SELECT ?::int, id FROM roles WHERE code = 'super_admin' ON CONFLICT DO NOTHING", [userId]);
     await conn.query(
-      "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_values) VALUES (?, ?, 'user', ?, JSON_OBJECT('via','cli'))",
+      "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_values) VALUES (?, ?, 'user', ?, jsonb_build_object('via','cli'))",
       [userId, existing ? "admin.password_reset_cli" : "admin.create_cli", userId]
     );
     await conn.commit();

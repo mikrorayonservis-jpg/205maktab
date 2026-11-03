@@ -44,7 +44,7 @@ export async function createInvitation(
   const norm = normalizeCode(code);
   const res = await db.execute(
     `INSERT INTO invitations (code_hash, code_hint, role_code, email, student_id, teacher_id, relation_type, expires_at, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? DAY), ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, NOW() + make_interval(days => ?), ?)`,
     [sha256(norm), norm.slice(-4), input.role, input.email || null, input.studentId || null, input.teacherId || null, input.relationType || null, input.days, actor.id]
   );
   return { id: res.insertId, code };
@@ -79,14 +79,14 @@ async function linkByInvitation(tx: Db, inv: InvitationRow, userId: number, name
       const r = await tx.execute("INSERT INTO parents (user_id, first_name, last_name, email) VALUES (?, ?, ?, ?)", [userId, names.firstName, names.lastName, names.email]);
       parent = { id: r.insertId };
     }
-    await tx.execute("INSERT IGNORE INTO parent_student (parent_id, student_id, relation_type) VALUES (?, ?, ?)", [parent.id, inv.student_id, inv.relation_type || "valideyn"]);
+    await tx.execute("INSERT INTO parent_student (parent_id, student_id, relation_type) VALUES (?, ?, ?) ON CONFLICT DO NOTHING", [parent.id, inv.student_id, inv.relation_type || "valideyn"]);
   } else if (inv.teacher_id) {
     const r = await tx.execute("UPDATE teachers SET user_id = ? WHERE id = ? AND user_id IS NULL", [userId, inv.teacher_id]);
     if (r.affectedRows !== 1) throw Errors.conflict("Bu müəllim profilinə artıq hesab bağlanıb.");
   }
-  await tx.execute("INSERT IGNORE INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code = ?", [userId, inv.role_code]);
+  await tx.execute("INSERT INTO user_roles (user_id, role_id) SELECT ?::int, id FROM roles WHERE code = ? ON CONFLICT DO NOTHING", [userId, inv.role_code]);
   if (inv.role_code === "class_teacher") {
-    await tx.execute("INSERT IGNORE INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code = 'teacher'", [userId]);
+    await tx.execute("INSERT INTO user_roles (user_id, role_id) SELECT ?::int, id FROM roles WHERE code = 'teacher' ON CONFLICT DO NOTHING", [userId]);
   }
 }
 
@@ -131,7 +131,7 @@ export async function redeemInvitation(user: { id: number; email: string; firstN
 
 export async function sendVerificationEmail(userId: number, email: string) {
   const token = randomToken();
-  await db.execute("INSERT INTO email_verifications (user_id, token_hash, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 48 HOUR))", [userId, sha256(token)]);
+  await db.execute("INSERT INTO email_verifications (user_id, token_hash, expires_at) VALUES (?, ?, NOW() + INTERVAL '48 hours')", [userId, sha256(token)]);
   const link = `${env.siteUrl}/verify-email?token=${encodeURIComponent(token)}`;
   return sendMail({
     to: email,
@@ -159,7 +159,7 @@ export async function requestPasswordReset(email: string, ip: string) {
   const token = randomToken();
   await db.execute("UPDATE password_resets SET used = 1, used_at = NOW() WHERE user_id = ? AND used = 0", [user.id]);
   await db.execute(
-    "INSERT INTO password_resets (user_id, token, expires_at, ip_address) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), ?)",
+    "INSERT INTO password_resets (user_id, token, expires_at, ip_address) VALUES (?, ?, NOW() + make_interval(mins => ?), ?)",
     [user.id, sha256(token), env.passwordResetMinutes, ip]
   );
   const link = `${env.siteUrl}/reset-password?token=${encodeURIComponent(token)}`;

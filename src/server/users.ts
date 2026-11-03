@@ -12,7 +12,7 @@ export async function listUsers(q: { search?: string; role?: string; page: numbe
   const params: unknown[] = [];
   if (q.search) {
     const like = `%${q.search.replace(/[%_\\]/g, "\\$&")}%`;
-    where.push("(u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)");
+    where.push("(u.email ILIKE ? OR u.first_name ILIKE ? OR u.last_name ILIKE ?)");
     params.push(like, like, like);
   }
   if (q.role) {
@@ -22,7 +22,7 @@ export async function listUsers(q: { search?: string; role?: string; page: numbe
   const total = await db.queryOne<{ n: number }>(`SELECT COUNT(*) AS n FROM users u WHERE ${where.join(" AND ")}`, params);
   const rows = await db.query(
     `SELECT u.id, u.email, u.first_name, u.last_name, u.is_active, u.email_verified, u.last_login_at, u.created_at,
-            (SELECT GROUP_CONCAT(r.code ORDER BY r.id) FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id) AS roles
+            (SELECT string_agg(r.code, ',' ORDER BY r.id) FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id) AS roles
        FROM users u WHERE ${where.join(" AND ")} ORDER BY u.created_at DESC LIMIT 25 OFFSET ?`,
     [...params, (q.page - 1) * 25]
   );
@@ -65,9 +65,9 @@ export async function updateUser(actor: CurrentUser, userId: number, input: { is
     for (const r of [...added, ...removed]) if (!canAssignRole(actor, r)) throw Errors.forbidden();
     await transaction(async (tx) => {
       if (removed.length) {
-        await tx.execute("DELETE ur FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = ? AND r.code IN (?)", [userId, removed]);
+        await tx.execute("DELETE FROM user_roles ur USING roles r WHERE r.id = ur.role_id AND ur.user_id = ? AND r.code IN (?)", [userId, removed]);
       }
-      for (const r of added) await tx.execute("INSERT IGNORE INTO user_roles (user_id, role_id) SELECT ?, id FROM roles WHERE code = ?", [userId, r]);
+      for (const r of added) await tx.execute("INSERT INTO user_roles (user_id, role_id) SELECT ?::int, id FROM roles WHERE code = ? ON CONFLICT DO NOTHING", [userId, r]);
       await tx.execute("UPDATE users SET role = ? WHERE id = ?", [next[0] ?? "student", userId]);
       await audit({ userId: actor.id, action: "user.roles", entityType: "user", entityId: userId, oldValues: { roles: current }, newValues: { roles: next }, req }, tx);
     });

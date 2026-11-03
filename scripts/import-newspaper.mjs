@@ -7,10 +7,11 @@ import path from "node:path";
 import crypto from "node:crypto";
 import sharp from "sharp";
 import { loadEnv, connect, ROOT } from "./lib/env.mjs";
+import { putObject, storageTarget } from "./lib/storage.mjs";
 
 loadEnv();
 const authorArg = process.argv.find((a) => a.startsWith("--author="))?.split("=")[1];
-const STORAGE = path.resolve(ROOT, process.env.STORAGE_DIR || "storage");
+const STORAGE = storageTarget();
 
 const ARTICLES = [
   {
@@ -103,8 +104,7 @@ async function storeImage(conn, file, ownerId) {
   const out = await sharp(buf).rotate().resize({ width: 2000, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer({ resolveWithObject: true });
   const d = new Date();
   const key = `public/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${crypto.randomBytes(16).toString("hex")}.webp`;
-  await fs.mkdir(path.dirname(path.join(STORAGE, key)), { recursive: true });
-  await fs.writeFile(path.join(STORAGE, key), out.data);
+  await putObject(STORAGE, key, out.data, "image/webp");
   const [res] = await conn.query(
     "INSERT INTO files (storage_key, original_name, mime_type, size_bytes, width, height, visibility, purpose, owner_user_id) VALUES (?, ?, 'image/webp', ?, ?, ?, 'public', 'gallery', ?)",
     [key, file, out.data.length, out.info.width, out.info.height, ownerId]
@@ -152,4 +152,4 @@ async function run() {
   await conn.end();
 }
 
-run().catch((e) => { console.error("[import] Xəta:", e.sqlMessage || e.message); process.exit(1); });
+run().catch((e) => { console.error("[import] Xəta:", e.message); process.exit(1); });

@@ -1,5 +1,8 @@
 # Deployment bələdçisi
 
+> **03.11.2026:** baza MySQL-dən Supabase Postgres-ə köçürülüb. Cari yol — Vercel + Supabase: [SUPABASE_VERCEL.md](SUPABASE_VERCEL.md).
+> Aşağıdakı VPS/Windows təlimatları MySQL dövrünə aiddir; öz serverinizdə işlədəcəksinizsə MySQL əvəzinə `DATABASE_URL` (Postgres) istifadə edin.
+
 Platforma Node.js tələb edir (Next.js server render, API, fayl yükləmə). Paylaşılan PHP hostinqi uyğun deyil; VPS, Windows Server və ya Node dəstəkli hostinq lazımdır.
 
 ## Variant A — Linux VPS (Ubuntu 22.04+, nginx, systemd)

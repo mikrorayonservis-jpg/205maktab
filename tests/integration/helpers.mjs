@@ -1,6 +1,6 @@
 // Test klienti: cookie qabı, CSRF tokeni və JSON köməkçiləri.
-import mysql from "mysql2/promise";
-import { loadEnv } from "../../scripts/lib/env.mjs";
+import pg from "pg";
+import { loadEnv, dbConfig, toPg } from "../../scripts/lib/env.mjs";
 
 loadEnv();
 export const BASE = process.env.TEST_BASE_URL;
@@ -70,16 +70,15 @@ export async function login(email, password = PASSWORD) {
 let pool;
 export function db() {
   if (!pool) {
-    pool = mysql.createPool({
-      host: process.env.DB_HOST, port: Number(process.env.DB_PORT || 3306), user: process.env.DB_USER, password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME_TEST, charset: "utf8mb4", dateStrings: true, connectionLimit: 3,
-    });
+    const cfg = dbConfig({ test: true });
+    pool = new pg.Pool({ connectionString: cfg.connectionString, ssl: cfg.ssl, max: 3 });
   }
   return pool;
 }
 export async function q(sql, params = []) {
-  const [rows] = await db().query(sql, params);
-  return rows;
+  const { text, values } = toPg(sql, params);
+  const res = await db().query(text, values);
+  return res.rows;
 }
 export async function closeDb() {
   if (pool) await pool.end();

@@ -171,7 +171,7 @@ export const RESOURCES: ResourceDef[] = [
   },
   {
     key: "galleries", title: "Qalereya albomları", singular: "Albom", table: "galleries", permission: "gallery.manage",
-    softDelete: true, orderBy: "COALESCE(event_date, DATE(created_at)) DESC", search: ["title_az", "category_az"], slugFrom: "title_az", createdByColumn: "created_by",
+    softDelete: true, orderBy: "COALESCE(event_date, (created_at AT TIME ZONE 'Asia/Baku')::date) DESC", search: ["title_az", "category_az"], slugFrom: "title_az", createdByColumn: "created_by",
     description: "Yetkinlik yaşına çatmayan şagirdlərin təsviri olan albom yalnız valideyn razılığı təsdiqləndikdən sonra dərc edilə bilər.",
     fields: [
       { name: "title_az", label: "Albomun adı", type: "text", required: true, max: 255, list: true },
@@ -187,7 +187,7 @@ export const RESOURCES: ResourceDef[] = [
   },
   {
     key: "documents", title: "Sənədlər", singular: "Sənəd", table: "documents", permission: "documents.manage",
-    softDelete: true, orderBy: "COALESCE(published_on, DATE(created_at)) DESC", search: ["title_az"], slugFrom: "title_az", createdByColumn: "uploaded_by", filters: ["category_az"],
+    softDelete: true, orderBy: "COALESCE(published_on, (created_at AT TIME ZONE 'Asia/Baku')::date) DESC", search: ["title_az"], slugFrom: "title_az", createdByColumn: "uploaded_by", filters: ["category_az"],
     fields: [
       { name: "title_az", label: "Sənədin adı", type: "text", required: true, max: 300, list: true },
       { name: "slug", label: "URL (boş qalsa avtomatik)", type: "text", max: 300 },

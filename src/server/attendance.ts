@@ -135,8 +135,8 @@ export async function studentAttendance(studentId: number, from: string, to: str
 export async function classAttendanceReport(classId: number, from: string, to: string) {
   return db.query<{ student_id: number; student_name: string; present: number; late: number; excused: number; unexcused: number }>(
     `SELECT s.id AS student_id, CONCAT(s.last_name, ' ', s.first_name) AS student_name,
-            SUM(a.status = 'present') AS present, SUM(a.status = 'late') AS late,
-            SUM(a.status = 'excused') AS excused, SUM(a.status = 'unexcused') AS unexcused
+            COUNT(*) FILTER (WHERE a.status = 'present') AS present, COUNT(*) FILTER (WHERE a.status = 'late') AS late,
+            COUNT(*) FILTER (WHERE a.status = 'excused') AS excused, COUNT(*) FILTER (WHERE a.status = 'unexcused') AS unexcused
        FROM students s
        LEFT JOIN attendance a ON a.student_id = s.id AND a.date BETWEEN ? AND ?
       WHERE s.class_id = ? AND s.deleted_at IS NULL

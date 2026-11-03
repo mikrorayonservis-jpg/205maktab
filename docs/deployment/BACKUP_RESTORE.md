@@ -1,5 +1,7 @@
 # Backup və bərpa
 
+> **03.11.2026:** `npm run backup` indi `pg_dump` (custom format, public sxemi) + Supabase Storage bucket-ının surətini, `npm run restore` isə `pg_restore` istifadə edir. Ətraflı: `supabase/README.md` → Rollback and recovery.
+
 ## Nə saxlanılır
 | Komponent | Üsul | Yer |
 |---|---|---|

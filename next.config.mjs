@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
-  serverExternalPackages: ["@node-rs/argon2", "sharp", "nodemailer", "mysql2"],
+  serverExternalPackages: ["@node-rs/argon2", "sharp", "nodemailer", "pg"],
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 3600,

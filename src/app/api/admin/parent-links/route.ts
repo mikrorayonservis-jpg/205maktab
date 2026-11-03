@@ -28,7 +28,7 @@ export const POST = route(
     if (!parent) throw Errors.badRequest("Bu e-poçtla valideyn hesabı tapılmadı. Valideyn üçün dəvət kodu yaradın.", { email: "Valideyn tapılmadı." });
     const st = await db.queryOne("SELECT id FROM students WHERE id = ? AND deleted_at IS NULL", [body.studentId]);
     if (!st) throw Errors.notFound("Şagird");
-    const r = await db.execute("INSERT IGNORE INTO parent_student (parent_id, student_id, relation_type) VALUES (?, ?, ?)", [parent.id, body.studentId, body.relationType]);
+    const r = await db.execute("INSERT INTO parent_student (parent_id, student_id, relation_type) VALUES (?, ?, ?) ON CONFLICT DO NOTHING", [parent.id, body.studentId, body.relationType]);
     if (!r.affectedRows) throw Errors.conflict("Bu valideyn artıq şagirdə bağlanıb.");
     await audit({ userId: user!.id, action: "parent_link.create", entityType: "parent_student", entityId: body.studentId, newValues: { parentId: parent.id }, req });
     return ok({ linked: true }, { status: 201 });

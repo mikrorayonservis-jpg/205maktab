@@ -25,7 +25,7 @@ try {
       await conn.query("UPDATE users SET is_active = 0, locked_until = NULL WHERE id = ?", [u.id]);
       const [r] = await conn.query("UPDATE sessions SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL", [u.id]);
       await conn.query(
-        "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_values) VALUES (NULL, 'user.legacy_admin_disabled', 'user', ?, JSON_OBJECT('via','cli'))",
+        "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_values) VALUES (NULL, 'user.legacy_admin_disabled', 'user', ?, jsonb_build_object('via','cli'))",
         [u.id]
       );
       await conn.commit();

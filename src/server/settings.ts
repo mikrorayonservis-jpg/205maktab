@@ -58,7 +58,7 @@ export async function saveSettings(values: Partial<Settings>, userId: number) {
     if (!(key in SETTING_DEFS)) continue;
     await db.execute(
       `INSERT INTO site_settings (setting_key, setting_value, description_az, updated_by) VALUES (?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by)`,
+       ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_by = EXCLUDED.updated_by`,
       [key, value ?? "", SETTING_DEFS[key as SettingKey].label, userId]
     );
   }

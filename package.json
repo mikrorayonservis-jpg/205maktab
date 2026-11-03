@@ -16,6 +16,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:migrate": "node scripts/db-migrate.mjs",
     "db:migrate:test": "node scripts/db-migrate.mjs --test",
+    "supabase:bundle": "node scripts/supabase-bundle.mjs",
+    "db:copy-mysql": "node scripts/migrate-mysql-data.mjs",
+    "storage:upload": "node scripts/storage-upload.mjs",
     "admin:create": "node scripts/admin-create.mjs",
     "admin:disable-legacy": "node scripts/disable-legacy-admin.mjs",
     "user:status": "node scripts/user-status.mjs",
@@ -31,13 +34,14 @@
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.0",
+    "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/postcss": "^4.3.3",
     "clsx": "^2.1.0",
     "lucide-react": "^1.66.0",
-    "mysql2": "^3.11.0",
     "next": "15.5.28",
     "next-themes": "^0.4.0",
     "nodemailer": "^6.9.16",
+    "pg": "^8.23.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "server-only": "^0.0.1",
@@ -48,8 +52,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "mysql2": "^3.11.0",
     "postcss": "^8.4.0",
     "typescript": "^5.6.0"
   }

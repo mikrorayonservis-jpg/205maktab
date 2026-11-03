@@ -7,15 +7,15 @@ import { Errors } from "./http";
 
 export async function hit(key: string, limit: number, windowSeconds: number): Promise<{ allowed: boolean; count: number }> {
   const bucket = key.slice(0, 191);
-  await db.execute(
+  const res = await db.execute(
     `INSERT INTO rate_limits (bucket_key, window_start, hits) VALUES (?, NOW(), 1)
-     ON DUPLICATE KEY UPDATE
-       hits = IF(window_start < DATE_SUB(NOW(), INTERVAL ? SECOND), 1, hits + 1),
-       window_start = IF(window_start < DATE_SUB(NOW(), INTERVAL ? SECOND), NOW(), window_start)`,
+     ON CONFLICT (bucket_key) DO UPDATE SET
+       hits = CASE WHEN rate_limits.window_start < NOW() - make_interval(secs => ?) THEN 1 ELSE rate_limits.hits + 1 END,
+       window_start = CASE WHEN rate_limits.window_start < NOW() - make_interval(secs => ?) THEN NOW() ELSE rate_limits.window_start END
+     RETURNING hits`,
     [bucket, windowSeconds, windowSeconds]
   );
-  const row = await db.queryOne<{ hits: number }>("SELECT hits FROM rate_limits WHERE bucket_key = ?", [bucket]);
-  const count = Number(row?.hits || 0);
+  const count = Number(res.rows[0]?.hits || 0);
   return { allowed: count <= limit, count };
 }
 
