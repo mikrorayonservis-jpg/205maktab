@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+storage/
+storage-test/
+backups/
+_backup/
+*.log
+.env
+.env.local
+.env.*.local
+tsconfig.tsbuildinfo
+next-env.d.ts
+test-results/

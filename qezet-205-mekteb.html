@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<title>Yeni Dövr 205 — Məktəb Qəzeti</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background:#e9e9e4;
+    font-family: 'Liberation Serif','DejaVu Serif',serif;
+    color:#232323;
+  }
+  .page {
+    width: 210mm; min-height: 297mm; height: 297mm;
+    padding: 13mm 15mm 16mm 15mm;
+    margin: 0 auto 6mm auto;
+    background:#fff;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    font-size: 10.3pt;
+    line-height: 1.42;
+  }
+  .page:last-child { page-break-after: auto; margin-bottom:0; }
+  @media print { body{background:#fff;} .page{margin:0; box-shadow:none;} }
+
+  h1,h2,h3,p { margin:0; }
+  p+p{ margin-top:6px; }
+  .justify{ text-align:justify; }
+
+  .page-number{
+    position:absolute; left:14mm; bottom:9mm;
+    width:6.5mm;height:6.5mm; background:#b8922f; color:#fff;
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-weight:700; font-size:9.5pt;
+    display:flex; align-items:center; justify-content:center; border-radius:2px;
+  }
+
+  .kicker{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-weight:700; letter-spacing:.5px; color:#5b6b3f; font-size:9pt; text-transform:uppercase;
+  }
+  .placeholder-note{ color:#a8762a; font-style:italic; }
+
+  .photo-frame{ border:1px solid #d8d3c4; border-radius:4px; overflow:hidden; line-height:0; }
+  .photo-frame img{ width:100%; height:auto; display:block; }
+
+  .masthead{
+    display:flex; align-items:stretch; gap:10px; border-bottom:3px solid #5b6b3f; padding-bottom:8px; margin-bottom:6px;
+  }
+  .masthead-center{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .masthead-center .school-line{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:11pt; color:#3d3d3d; letter-spacing:.3px;
+  }
+  .masthead-center .paper-title{
+    font-family:'Liberation Serif','DejaVu Serif',serif; font-weight:700; font-size:34pt; color:#232323; letter-spacing:1px;
+  }
+  .crest{ width:24%; display:flex; align-items:center; justify-content:center; }
+  .crest-shield{ width:110px;height:110px; display:block; object-fit:contain; }
+
+  .page1-sub{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:12.5pt;
+    color:#232323; margin: 10px 0 8px 0; letter-spacing:.2px;
+  }
+  .page1-intro{ display:flex; gap:14px; }
+  .page1-intro .txt{ flex:1.15; }
+  .page1-intro .txt p{ margin:0 0 7px 0; font-size:9.6pt; }
+  .page1-intro .img-col{ flex:1; display:flex; flex-direction:column; }
+  .page1-intro .img-col img{ width:100%; height:auto; border:1px solid #d8d3c4; display:block; }
+  .page1-intro .img-col .cap{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-size:7.6pt; color:#7c7562; text-align:center; margin-top:4px; font-style:italic;
+  }
+
+  .news-box{
+    margin-top:12px; border:1px solid #d8d3c4; border-radius:3px; overflow:hidden;
+  }
+  .news-box .nb-title{
+    background:#5b6b3f; color:#fff; text-align:center; font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-weight:700; font-size:10.5pt; padding:5px; letter-spacing:.4px;
+  }
+  .news-cols{ display:flex; }
+  .news-cols .col{ flex:1; padding:9px 11px; font-size:8.7pt; }
+  .news-cols .col:first-child{ border-right:1px solid #d8d3c4; }
+  .news-cols .col-head{ display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+  .icon-round{
+    width:26px;height:26px;border-radius:50%; background:#5b6b3f; flex:none;
+    display:flex; align-items:center; justify-content:center; color:#fff;
+  }
+  .icon-round.gold{ background:#b8922f; }
+  .icon-round svg{ width:15px; height:15px; }
+  .col-head .col-title{ font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:9.6pt; color:#3d3d3d; }
+  .news-cols p{ margin:0 0 5px 0; }
+
+  .page1-footer{
+    position:absolute; left:15mm; right:15mm; bottom:9mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-size:8.3pt; color:#5b5b5b;
+    border-top:1px solid #d8d3c4; padding-top:5px;
+  }
+  .page1-footer .pn{
+    width:6.5mm;height:6.5mm; background:#b8922f; color:#fff; font-weight:700; font-size:9.5pt;
+    display:flex; align-items:center; justify-content:center; border-radius:2px; margin-right:8px;
+  }
+  .page1-footer .foot-left{ display:flex; align-items:center; }
+
+  .headline{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:14.5pt;
+    color:#5b5342; text-transform:uppercase; letter-spacing:.3px; line-height:1.25; margin-bottom:9px;
+  }
+  .subheadline{
+    font-style:italic; font-weight:700; font-size:10pt; color:#3d3d3d; margin-bottom:8px;
+  }
+  .row{ display:flex; gap:12px; }
+  .side-photos{ width:34%; display:flex; flex-direction:column; gap:10px; flex:none; }
+  .grow-text{ flex:1; font-size:9.4pt; }
+  .grow-text p{ margin:0 0 6px 0; }
+
+  .footbar{
+    position:absolute; left:15mm; right:15mm; bottom:9mm;
+    display:flex; justify-content:center; align-items:center;
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-size:7.6pt; color:#9a9482;
+    border-top:1px solid #e4e0d2; padding-top:5px; letter-spacing:.4px;
+  }
+  .footbar .badge{
+    position:absolute; left:0; top:50%; transform:translateY(-50%);
+    width:6.5mm;height:6.5mm; background:#b8922f; color:#fff; font-weight:700; font-size:9.5pt;
+    display:flex; align-items:center; justify-content:center; border-radius:2px;
+  }
+
+  .callout{
+    background:#f6efd9; border:1px solid #d9c98e; border-radius:6px; padding:10px 12px;
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-style:italic;
+    font-size:8.6pt; color:#7a5b1e; text-align:center; line-height:1.3;
+  }
+
+  /* Committee pages */
+  .committee-title{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:15pt; text-transform:uppercase;
+    letter-spacing:.4px; color:#232323; text-align:center;
+  }
+  .committee-sub{
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:11.5pt; text-transform:uppercase;
+    color:#5b6b3f; text-align:center; margin-top:2px; margin-bottom:12px;
+  }
+  .committee-hr{ border:none; border-top:2px solid #b8922f; margin-bottom:14px; }
+
+  .photo-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px 14px; margin-bottom:16px;
+  }
+  .member{ display:flex; flex-direction:column; align-items:center; position:relative; }
+  .member .star{ position:absolute; color:#c9a227; font-size:9pt; }
+  .member .s1{ top:-2px; left:6px; }
+  .member .s2{ top:8px; right:2px; }
+  .member .s3{ bottom:28px; left:-2px; }
+  .member .tag{
+    margin-top:5px; background:#3d3d3d; color:#fff; font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-size:8.4pt; padding:3px 6px; border-radius:2px; text-align:center; width:92%;
+  }
+  .member .tag.tag-top{ margin-top:0; margin-bottom:6px; }
+  .member .photo-frame{
+    width:100%; height:40mm; border-radius:50% / 40%; overflow:hidden; border:1px solid #d8d3c4;
+  }
+  .member .photo-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .members-list{ font-size:9pt; margin-bottom:8px; }
+  .members-list ol{ margin:0 0 8px 20px; padding:0; }
+  .members-list li{ margin-bottom:2px; }
+  .committee-body{ font-size:9.3pt; }
+  .committee-body p{ margin:0 0 7px 0; }
+
+  /* Çap üçün */
+  @media print {
+    .page { margin:0; box-shadow:none; page-break-after:always; }
+    .page:last-child { page-break-after:auto; }
+    .no-print { display:none !important; }
+    .photo-frame img { max-width:100%; height:auto; }
+    .photo-grid { page-break-inside:avoid; }
+    .member { page-break-inside:avoid; }
+    .members-list { page-break-inside:avoid; }
+    .committee-body { page-break-inside:avoid; }
+    .headline, .subheadline { page-break-after:avoid; }
+    h1, h2, h3, h4 { page-break-after:avoid; }
+  }
+
+  /* ===== CHILDREN'S DAY PAGE 4 ===== */
+  .cd-header {
+    border-bottom:3px solid #5b6b3f;
+    padding-bottom:5px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .cd-header .school { font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-weight:700; font-size:10pt; color:#3d3d3d; }
+  .cd-header .paper { font-family:'Liberation Serif','DejaVu Serif',serif; font-weight:700; font-size:15pt; color:#232323; letter-spacing:1px; }
+  .cd-header .date { font-family:'Liberation Sans','DejaVu Sans',sans-serif; font-size:8.5pt; color:#5b5b5b; }
+
+  .cd-title { text-align:center; margin-bottom:8px; }
+  .cd-title .main {
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-weight:700; font-size:17pt; color:#5b6b3f;
+    text-transform:uppercase; letter-spacing:.4px; line-height:1.2;
+  }
+  .cd-title .sub {
+    font-family:'Liberation Serif','DejaVu Serif',serif;
+    font-style:italic; font-size:9.5pt; color:#5b5342;
+    margin-top:2px; border-bottom:2px solid #b8922f;
+    padding-bottom:4px; display:inline-block;
+  }
+
+  .cd-body { font-size:8.8pt; text-align:justify; margin-bottom:6px; }
+  .cd-body p { margin:0 0 4px 0; }
+  .cd-body .quote {
+    font-weight:700; font-size:9pt; color:#5b6b3f;
+    text-align:center; margin-top:4px;
+  }
+
+  /* 4 şəkil qalereyası - 2 sütun, hər sütunda 2 şəkil */
+  .cd-gallery {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin:8px 0 10px 0;
+  }
+  .cd-gallery .item {
+    border:1px solid #d8d3c4;
+    border-radius:4px;
+    overflow:hidden;
+    background:#faf8f4;
+  }
+  .cd-gallery .item img {
+    width:100%;
+    height:64mm;
+    object-fit:cover;
+    display:block;
+  }
+  .cd-gallery .item .cap {
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-size:6.6pt; color:#7c7562;
+    text-align:center; padding:3px 0; font-style:italic;
+    background:#faf8f4;
+  }
+
+  .cd-committee {
+    margin-top:6px; padding-top:6px;
+    border-top:2px solid #b8922f;
+  }
+  .cd-committee .title {
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-weight:700; font-size:9.5pt; color:#5b6b3f;
+    text-align:center; text-transform:uppercase; letter-spacing:.4px;
+  }
+  .cd-committee .members {
+    display:flex; flex-wrap:wrap; justify-content:center;
+    gap:2px 14px; margin-top:3px;
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-size:7.8pt; color:#3d3d3d;
+  }
+  .cd-committee .members span { white-space:nowrap; }
+
+  .cd-footer {
+    position:absolute; left:15mm; right:15mm; bottom:9mm;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Liberation Sans','DejaVu Sans',sans-serif;
+    font-size:7pt; color:#5b5b5b;
+    border-top:1px solid #d8d3c4; padding-top:4px;
+  }
+  .cd-footer .badge {
+    width:6.5mm;height:6.5mm; background:#b8922f; color:#fff;
+    font-weight:700; font-size:9.5pt;
+    display:flex; align-items:center; justify-content:center; border-radius:2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PAGE 1 — COVER                                               -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="masthead">
+    <div class="masthead-center">
+      <div class="school-line">205 NÖMRƏLİ MƏKTƏB</div>
+      <div class="paper-title">YENİ DÖVR 205</div>
+    </div>
+    <div class="crest">
+      <img class="crest-shield" src="mekteb-logo.png" alt="205 nömrəli məktəbin möhürü">
+    </div>
+  </div>
+
+  <div class="page1-sub">205 NÖMRƏLİ TAM ORTA MƏKTƏB HAQQINDA ÜMUMİ MƏLUMAT</div>
+
+  <div class="page1-intro">
+    <div class="txt justify">
+      <p>Binəqədi rayonu Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi 1930-cu ildən fəaliyyət göstərir.</p>
+      <p>Məktəb Azərbaycanın Milli Qəhrəmanı Rövşən İmanovun adını daşıyır.</p>
+      <p>Azərbaycan Respublikasının Prezidenti İlham Əliyevin 2019-cu il 15 yanvar tarixli Sərəncamına uyğun olaraq "Bakı şəhərinin və onun qəsəbələrinin sosial-iqtisadi inkişafına dair Dövlət Proqramı"na əsasən məktəb sökülərək yenidən tikilib.</p>
+      <p>İki korpus və hər korpusda 4 mərtəbə olmaqla 960 şagird tutumlu məktəb inşa edilib. Məktəb 22 sentyabr 2021-ci il tarixində müəllim və şagirdlərin istifadəsinə verilib.</p>
+      <p>Məktəb 5 günlük iş rejimi ilə 2 növbədə fəaliyyət göstərir. Hazırkı 2025-2026-cı il tədris ilində məktəbdə təhsil alan 1425 şagirdin təlim-tərbiyəsi ilə 79 müəllim məşğul olur.</p>
+    </div>
+    <div class="img-col">
+      <img src="mekteb-foto.jpg" alt="205 nömrəli məktəbin binası">
+      <div class="cap">205 nömrəli tam orta ümumtəhsil məktəbinin binası</div>
+    </div>
+  </div>
+
+  <div class="page1-intro" style="margin-top:8px;">
+    <div class="txt justify" style="flex:1;">
+      <p>Təhsil ocağında 56 sinif otağı, müasir tələblərə cavab verən fənn laboratoriyaları, fənn kabinetləri, informatika, STEAM və rəqəmsal bacarıqlar kabinetləri, akt zalı, idman zalı, bufet, idman meydançası, tibb kabineti, inzibati heyət otaqları və hərbi kabinet mövcuddur. Məktəb lazımi avadanlıqlarla və kompüterlərlə təmin olunub.</p>
+      <p>Hər il məktəbin şagirdləri müxtəlif müsabiqələr, fənn olimpiadaları, intellektual yarışlar, hərbi-idman və idman yarışlarında iştirak edərək nailiyyətlər əldə ediblər. 2024-2025-ci tədris ilində məktəbin XI sinfini 115 məzun bitirib. Onlardan 55 nəfəri müxtəlif ali təhsil ocaqlarına qəbul olunub. 3 məzunumuz qəbul imtahanında 600 baldan yuxarı nəticə göstərib.</p>
+      <p>Məktəbdə STEAM və Rəqəmsal bacarıqlar layihəsi üzrə dərslər keçirilir. 205 nömrəli tam orta məktəb "Təhsildə İnkişaf və İnnovasiyalar üzrə Qrant Müsabiqəsi"nin qalibi olub. Bundan başqa məktəbin rəsmi saytı 2021-2022-ci tədris ilində paytaxtın ümumi təhsil müəssisələri arasında təşkil olunmuş "Ən yaxşı məktəb saytı" müsabiqəsinin də qalibi olub.</p>
+    </div>
+  </div>
+
+  <div class="news-box">
+    <div class="nb-title">2026-CI İLDƏ YENİLİKLƏR</div>
+    <div class="news-cols">
+      <div class="col justify">
+        <div class="col-head">
+          <div class="icon-round"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l7 3v6c0 5-3.2 8.2-7 9-3.8-.8-7-4-7-9V6l7-3z" stroke="#fff" stroke-width="1.6"/></svg></div>
+          <div class="col-title">Bullinqə Qarşı Mübarizə Şurası</div>
+        </div>
+        <p>Məktəbimizdə sağlam və təhlükəsiz psixoloji mühitin formalaşdırılması məqsədilə Bullinqə Qarşı Mübarizə Şurası yaradılmışdır. Şura müəllimlər və şagirdlərdən ibarət üzvlərdən təşkil olunmuşdur ki, bu da məktəbdə birgə əməkdaşlıq və qarşılıqlı məsuliyyət prinsipini gücləndirir.</p>
+        <p>Şuranın əsas məqsədi bullinq hallarının qarşısının alınması, erkən aşkar edilməsi və profilaktik tədbirlərin həyata keçirilməsidir.</p>
+        <p>Bununla yanaşı, şagirdlər arasında qarşılıqlı hörmət, tolerantlıq və empatiya dəyərlərinin təşviqi istiqamətində maarifləndirici görüşlər, sorğular və müzakirələr təşkil ediləcək. Valideynlər və pedaqoji heyətlə əməkdaşlıq edərək təhlükəsiz məktəb mühitinin qorunmasına xidmət edəcək. Məqsədimiz hər bir şagirdin özünü məktəbdə güvənli, dəyərli və rahat hiss etməsini təmin etməkdir.</p>
+      </div>
+      <div class="col justify">
+        <div class="col-head">
+          <div class="icon-round gold"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="8" stroke="#fff" stroke-width="1.6"/><path d="M4 12h16M12 4c2.6 2.4 2.6 13.6 0 16M12 4c-2.6 2.4-2.6 13.6 0 16" stroke="#fff" stroke-width="1.3"/></svg></div>
+          <div class="col-title">Kiçik Akademiya</div>
+        </div>
+        <p>Məktəbimizdə fəaliyyət göstərən Kiçik Akademiya bu tədris ilində də uğurla davam edir. Akademiya şagirdlərin elmi potensialını üzə çıxarmağa və tədqiqat bacarıqlarını inkişaf etdirməyə kömək edir.</p>
+        <p>Şagirdlər müxtəlif fənlər üzrə araşdırmalar aparır, layihələr hazırlayır və təqdimatlar edirlər. Bu fəaliyyət onların analitik düşünmə və müstəqil işləmə bacarıqlarını gücləndirir. Kiçik Akademiyanın məqsədi elmi düşüncəli, yaradıcı və təşəbbüskar gənclər yetişdirməkdir.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page1-footer">
+    <span class="foot-left"><span class="pn">1</span> <span class="placeholder-note">[TARİX]</span></span>
+    <span>BULLİNQLƏ MÜBARİZƏ ŞURASI</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 2 — Zərərli informasiya                                  -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="headline">"Zərərli İnformasiya və Təhlükəli Oyunlardan Özümüzü Qoruyaq" Mövzusunda Dərslər Keçirilib</div>
+
+  <div class="justify" style="font-size:9.1pt;">
+    <p>Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbində şagirdlər arasında internet təhlükəsizliyi və rəqəmsal savadlılığın artırılması məqsədilə "Zərərli informasiya və təhlükəli oyunlardan özümüzü qoruyaq" mövzusunda bir sıra maarifləndirici dərslər keçirilmişdir.</p>
+    <p>Tədbirlər Bullinqlə Mübarizə Şurası və Sosial-Psixoloji Dəstək Komissiyasının təşəbbüsü ilə müxtəlif siniflərdə təşkil olunmuş, şagirdlərə internetdə rastlaşa biləcəkləri zərərli məzmun, şübhəli linklər və təhlükəli onlayn oyunların mümkün riskləri barədə ətraflı məlumat verilmişdir.</p>
+    <p>Dərslər zamanı şagirdlərə naməlum şəxslərlə ünsiyyətdə ehtiyatlı olmaq, şəxsi məlumatları paylaşmamaq və şübhəli hallarda dərhal valideynlərinə və ya müəllimlərinə müraciət etmək tövsiyə olunmuşdur. Eyni zamanda kiberbullinqin əlamətləri və ona qarşı necə mübarizə aparmaq barədə də izahat verilmişdir.</p>
+    <p>Tədbirin sonunda şagirdlər arasında maraqlı fikir mübadiləsi aparılmış, mövzu ilə bağlı suallar cavablandırılmışdır. Məktəb rəhbərliyi bu kimi maarifləndirici tədbirlərin davamlı xarakter daşımasının vacibliyini vurğulamışdır.</p>
+  </div>
+
+  <div class="photo-frame" style="margin-top:12px;">
+    <img src="zerersiz-sinif1.jpg" alt="Zərərli informasiya mövzusunda dərs">
+  </div>
+  <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic; margin-top:2px;">Şagirdlər üçün maarifləndirici dərsdən görüntü</div>
+
+  <div class="photo-frame" style="margin-top:10px;">
+    <img src="zerersiz-sinif2.jpg" alt="Zərərli informasiya mövzusunda dərs">
+  </div>
+  <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic; margin-top:2px;">Digər sinifdə keçirilən dərsdən görüntü</div>
+
+  <div class="footbar"><div class="badge">2</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 3 — Narkomaniya                                          -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="headline">"Narkotikə Yox Deyirik" Mövzusunda Maarifləndirici Tədbir Keçirilib</div>
+  <div class="subheadline">Narkomaniyaya YOX Deyək!</div>
+
+  <div class="justify" style="font-size:9.1pt;">
+    <p>Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbində "Narkotiklərə yox deyirik!" mövzusunda geniş maarifləndirici tədbir keçirilmişdir.</p>
+    <p>Tədbirin əsas məqsədi yeniyetmə və gənclər arasında narkomaniyanın fəsadları barədə maarifləndirmə işinin gücləndirilməsi, onların zərərli vərdişlərdən uzaq tutulması və sağlam həyat tərzinin təbliğ olunmasıdır.</p>
+    <p>Tədbirdə polis əməkdaşları, məktəbin pedaqoji kollektivi, valideynlər və şagirdlər iştirak etmişlər. Çıxışlar zamanı narkomaniyanın insan sağlamlığına, ailəyə və cəmiyyətə vurduğu ciddi zərərlər barədə məlumat verilmişdir.</p>
+    <p>Tədbirin əsas hissəsində məktəbin istedadlı şagirdi <strong>Turan Rafikov</strong> baş rolda çıxış edərək narkomaniyanın insan həyatına və ailəyə vurduğu ağır fəsadları əks etdirən təsirli maarifləndirici tamaşa nümayiş etdirmişdir.</p>
+  </div>
+
+  <div class="photo-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top:10px; margin-bottom:0;">
+    <div>
+      <div class="photo-frame"><img src="narko-tamasa1.jpg" alt="Tamaşa səhnəsindən görüntü"></div>
+      <div class="cap" style="text-align:center; font-size:6.6pt; color:#7c7562; font-style:italic; margin-top:2px;">Tamaşa səhnəsindən görüntü</div>
+    </div>
+    <div>
+      <div class="photo-frame"><img src="narko-tamasa2.jpg" alt="Turan Rafikov baş rolda"></div>
+      <div class="cap" style="text-align:center; font-size:6.6pt; color:#7c7562; font-style:italic; margin-top:2px;">Turan Rafikov baş rolda</div>
+    </div>
+    <div>
+      <div class="photo-frame" style="margin-top:8mm;"><img src="narko-audience.jpg" alt="Tədbirin iştirakçıları"></div>
+      <div class="cap" style="text-align:center; font-size:6.6pt; color:#7c7562; font-style:italic; margin-top:2px;">Tədbirin iştirakçıları</div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:14px;">Unutmayaq ki, sağlam gələcək düzgün seçimdən başlayır!</div>
+
+  <div style="text-align:center; font-size:9.3pt; font-weight:700; color:#3d6b3f; margin-top:10px; line-height:1.5; font-family:'Liberation Sans','DejaVu Sans',sans-serif;">
+    Sağlam həyat tərzini seç! &nbsp;&nbsp; Gələcəyini qoru! &nbsp;&nbsp; Narkomaniyaya YOX de!
+  </div>
+
+  <div style="text-align:center; font-size:7.4pt; color:#8a8266; font-style:italic; margin-top:8px; font-family:'Liberation Sans','DejaVu Sans',sans-serif;">
+    #ETN #BŞTİ #MÜTDA #Məktəb205 #NarkomaniyayaYoxDeyək #SağlamGənclik #SağlamGələcək #MəktəbTədbiri
+  </div>
+
+  <div class="footbar"><div class="badge">3</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 4 — 1 İYUN UŞAQLAR GÜNÜ (TAM DOLU)                     -->
+<!-- ============================================================ -->
+<div class="page" style="padding-bottom:10mm;">
+  <!-- Başlıq -->
+  <div class="cd-header">
+    <span class="school">205 NÖMRƏLİ MƏKTƏB</span>
+    <span class="paper">YENİ DÖVR 205</span>
+    <span class="date">1 İyun 2026</span>
+  </div>
+
+  <div class="cd-title">
+    <div class="main">1 İyun – Uşaqların Beynəlxalq Müdafiəsi Günü</div>
+    <div class="sub">1 İyun – Uşaqların Beynəlxalq Müdafiəsi Günü münasibətilə məktəbimizdə rəngarəng və yaddaqalan tədbir keçirildi</div>
+  </div>
+
+  <!-- Məqalə mətni -->
+  <div class="cd-body">
+    <p>1 İyun – Uşaqların Beynəlxalq Müdafiəsi Günü münasibətilə məktəbimizdə rəngarəng və yaddaqalan tədbir keçirildi.</p>
+    <p>Tədbir Azərbaycan Respublikasının Dövlət Himninin səsləndirilməsi ilə başladı. Daha sonra şagirdlərimizin hazırladığı maraqlı rəqs nömrələri və səhnəciklər bayram ab-havasını daha da yüksəltdi.</p>
+    <p>Günün ən maraqlı məqamlarından biri isə şagirdlərin təqdim etdiyi "Tıq-Tıq xanım" tamaşası oldu. Tamaşa izləyicilər tərəfindən böyük maraqla qarşılandı.</p>
+    <p>Tədbirin sonunda məktəbin direktoru Əliheydər Əlifli çıxış edərək bütün uşaqları bayram münasibətilə təbrik etdi, onlara uğurlar və xoşbəxt gələcək arzuladı.</p>
+
+    <div class="cd-committee">
+      <div class="title">İctimai İşlərin Təşkili Komissiyası</div>
+      <div class="members">
+        <span>1. Məlikova Nəcibə</span>
+        <span>2. Cəlalzadə Aysu</span>
+        <span>3. Rafikov Turan</span>
+        <span>4. Babayeva Səma</span>
+        <span>5. Məmmədzadə İnci</span>
+        <span>6. Bədəlov Ömər</span>
+        <span>7. Məmmədova Məryəm</span>
+        <span>8. Zeynallı Bəhram</span>
+      </div>
+    </div>
+
+    <div class="quote">Uşaqların gülüşü dünyamızı gözəlləşdirir. Bayramınız mübarək, əziz balalar!</div>
+  </div>
+
+  <!-- 4 şəkil qalereyası - 2x2 -->
+  <div class="cd-gallery">
+    <div class="item">
+      <img src="1iyun.jpg" alt="1 İyun tədbiri">
+      <div class="cap">Tədbirdən görüntü</div>
+    </div>
+    <div class="item">
+      <img src="1uyun.jpg" alt="1 İyun tədbiri">
+      <div class="cap">Şagird çıxışları</div>
+    </div>
+    <div class="item">
+      <img src="usaglar1uyun.jpg" alt="Uşaqlar 1 İyun">
+      <div class="cap">Uşaqlar bayramda</div>
+    </div>
+    <div class="item">
+      <img src="iyunsekil.jpg" alt="İyun tədbiri">
+      <div class="cap">Rəngarəng tədbir anı</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="cd-footer">
+    <span>205 NÖMRƏLİ MƏKTƏB</span>
+    <span>YENİ DÖVR 205</span>
+    <span class="badge">4</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 5 — Psixoloji seminar                                   -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="headline" style="font-size:13pt;">Bullinqlə Mübarizə Şurası — Sosial-Psixoloji Dəstək Komissiyası Yaradıldı</div>
+  <div class="subheadline">Məktəbdə şagirdlər arasında sağlam, təhlükəsiz və qarşılıqlı hörmətə əsaslanan mühitin qurulması istiqamətində yeni addım</div>
+
+  <div class="row">
+    <div class="side-photos" style="width:36%;">
+      <div class="photo-frame">
+        <img src="bms-foto1.jpg" alt="Bullinqlə Mübarizə Şurası üzvləri">
+      </div>
+      <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic;">Komissiya üzvləri diplomları ilə</div>
+    </div>
+    <div class="grow-text justify" style="font-size:8.9pt;">
+      <p>Məktəbdə şagirdlər arasında sağlam, təhlükəsiz və qarşılıqlı hörmətə əsaslanan münasibətlərin formalaşdırılması, bullinq hallarının qarşısının alınması və şagirdlərin sosial-psixoloji rifahının dəstəklənməsi məqsədilə 6 nəfər fəal şagirddən ibarət Bullinqlə Mübarizə Şurası və Sosial-Psixoloji Dəstək Komissiyası yaradılmışdır.</p>
+      <p>Komissiyanın üzvləri məktəbin ictimai həyatında fəal iştirak edən, məsuliyyətli, ünsiyyət bacarığı yüksək və həmyaşıdları arasında müsbət nüfuza malik şagirdlərdən seçilmişdir.</p>
+      <p><strong>Şagirdlərin əsas fəaliyyət istiqamətləri:</strong></p>
+      <ul style="margin:0 0 0 16px; padding:0; font-size:8.6pt; line-height:1.35;">
+        <li style="margin-bottom:3px;">Şagirdlər arasında bullinqin mahiyyəti, onun fiziki, psixoloji və sosial nəticələri barədə maarifləndirici söhbətlər aparmaq;</li>
+        <li style="margin-bottom:3px;">Bullinq, təhqir, ayrı-seçkilik, kiberbullinq və digər neqativ davranışların qarşısının alınmasına yönəlmiş tədbirlərdə iştirak etmək;</li>
+        <li style="margin-bottom:3px;">Həmyaşıdları arasında mehribanlıq, qarşılıqlı hörmət, tolerantlıq və əməkdaşlıq mühitinin yaradılmasına dəstək göstərmək;</li>
+      </ul>
+    </div>
+  </div>
+
+  <ul style="margin:6px 0 0 16px; padding:0; font-size:8.6pt; line-height:1.35;">
+    <li style="margin-bottom:3px;">Bullinq və ya digər sosial-psixoloji çətinliklərlə üzləşən şagirdləri dinləmək, onlara həmyaşıd dəstəyi göstərmək və zəruri hallarda məktəbin psixoloquna, sinif rəhbərinə və rəhbərliyə müraciət etmələri üçün istiqamət vermək;</li>
+    <li style="margin-bottom:3px;">Məktəbdə keçirilən maarifləndirici görüş, seminar, təqdimat və sosial aksiyaların təşkilində fəal iştirak etmək;</li>
+    <li style="margin-bottom:3px;">Şagirdlərin təklif və problemlərini dinləyərək onların məktəb rəhbərliyinə və aidiyyəti şəxslərə çatdırılmasına kömək etmək;</li>
+    <li style="margin-bottom:3px;">Məktəbdə təhlükəsiz və inklüziv sosial mühitin formalaşdırılmasına töhfə vermək;</li>
+    <li style="margin-bottom:3px;">Kiberbullinqin qarşısının alınması və internetdən təhlükəsiz istifadə ilə bağlı həmyaşıdları maarifləndirmək;</li>
+    <li>Bullinq hallarının müşahidə edilməsi zamanı vəziyyəti gərginləşdirmədən məsul şəxslərə məlumat vermək və problemin həllinə dəstək olmaq.</li>
+  </ul>
+
+  <div class="row" style="margin-top:8px;">
+    <div class="grow-text justify" style="font-size:8.9pt;">
+      <p><strong>Görülmüş işlər.</strong> Komissiya üzvləri tərəfindən şagirdlər arasında bullinqə qarşı maarifləndirici söhbətlər və məlumatlandırıcı görüşlər keçirilmiş, bullinqin qarşısının alınması ilə bağlı şagirdlərin fikirləri öyrənilmişdir. Şagirdlər arasında dostluq, həmrəylik və qarşılıqlı hörmətin təşviqi məqsədilə müxtəlif sosial təşəbbüslərdə iştirak edilmişdir.</p>
+      <p>Komissiya üzvləri həmçinin siniflərdə müşahidə olunan sosial münasibətlərə diqqət yetirmiş, ehtiyac yarandıqda problemlərin məktəbin psixoloqu və müəllimləri ilə əməkdaşlıq çərçivəsində həllinə dəstək olmuşlar.</p>
+      <p><strong>Nəticə.</strong> Bullinqlə Mübarizə Şurası və Sosial-Psixoloji Dəstək Komissiyasının fəaliyyəti şagirdlərin məktəb həyatında daha fəal iştirakına, problemlərin vaxtında müəyyənləşdirilməsinə, həmyaşıdlar arasında qarşılıqlı dəstək və hörmət mühitinin gücləndirilməsinə xidmət edir.</p>
+      <p style="font-size:8.3pt; color:#5b5b5b;">Komissiyanın fəaliyyətinə məktəb psixoloqları <strong>Aytən Məmmədova</strong> və <strong>Zülfiyyə Məsimova</strong> metodiki dəstək göstərir; məktəb direktoru <strong>Əliheydər Əlifli</strong> komissiya üzvlərinin təşəbbüskar fəaliyyətini yüksək qiymətləndirmişdir.</p>
+    </div>
+    <div class="side-photos" style="width:34%;">
+      <div class="photo-frame">
+        <img src="bms-foto2.jpg" alt="Komissiya üzvləri psixoloqla görüşdə">
+      </div>
+      <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic;">Komissiya üzvləri psixoloqla görüşdə</div>
+      <div class="callout" style="font-size:7.8pt; padding:7px 9px;">Unutmayaq: Zarafat başqasına zərər verirsə, bu artıq zarafat deyil!</div>
+    </div>
+  </div>
+
+  <div class="photo-grid" style="grid-template-columns:1fr 1fr; margin-top:10px; margin-bottom:0;">
+    <div>
+      <div class="photo-frame"><img src="zerersiz-sinif1.jpg" alt="Zərərli informasiya mövzusunda dərs"></div>
+      <div class="cap" style="text-align:center; font-size:6.6pt; color:#7c7562; font-style:italic; margin-top:2px;">Sinifdə keçirilən maarifləndirici dərs</div>
+    </div>
+    <div>
+      <div class="photo-frame"><img src="zerersiz-sinif2.jpg" alt="Zərərli informasiya mövzusunda dərs"></div>
+      <div class="cap" style="text-align:center; font-size:6.6pt; color:#7c7562; font-style:italic; margin-top:2px;">Digər sinifdə keçirilən dərsdən görüntü</div>
+    </div>
+  </div>
+
+  <div class="footbar"><div class="badge">5</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 6 — Rəsm müsabiqəsi                                     -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="headline">"Narkomaniyaya Yox Deyək" Adlı Rəsm Müsabiqəsi Keçirilib</div>
+  <div class="row">
+    <div class="side-photos">
+      <div class="photo-frame">
+        <img src="resm-acilis.jpg" alt="Sərginin açılışı">
+      </div>
+      <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic;">Sərginin açılışı</div>
+      <div class="photo-frame">
+        <img src="resm-sergi.jpg" alt="Rəsm sərgisi">
+      </div>
+      <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic;">Rəsm sərgisi</div>
+      <div class="photo-frame">
+        <img src="resm-baxis.jpg" alt="Münsiflər baxışda">
+      </div>
+      <div class="cap" style="text-align:center; font-size:6.8pt; color:#7c7562; font-style:italic;">Münsiflər baxışda</div>
+    </div>
+    <div class="grow-text justify" style="font-size:9.1pt;">
+      <p>Məktəbdə sağlam həyat tərzinin təbliği, zərərli vərdişlərə qarşı maarifləndirmə işinin gücləndirilməsi və narkomaniyanın cəmiyyətə vurduğu zərərlər barədə şagirdlərin məlumatlılığının artırılması məqsədilə "Narkomaniyaya yox deyək" mövzusunda rəsm sərgisi təşkil edilmişdir. Tədbirin keçirilməsində əsas məqsəd şagirdlər arasında sağlam həyat tərzinin təşviqi, zərərli vərdişlərdən uzaq durmağın vacibliyinin izah olunması və onların yaradıcılıq qabiliyyətlərinin inkişaf etdirilməsidir.</p>
+      <p>Məktəb direktoru <strong>Əliheydər Əlifli</strong> və UBTR <span class="placeholder-note">[Ad Soyad]</span>-nın təşkilatçılığı ilə keçirilən bu sərgidə şagirdlər narkomaniyanın mənfi təsirlərini, sağlam həyat tərzinin üstünlüklərini və düzgün həyat seçiminin əhəmiyyətini əks etdirən müxtəlif rəsmlər təqdim etmişlər. Rəsmlərdə sağlam gələcək, güclü iradə, idman və düzgün həyat tərzinin insan həyatında rolu yaradıcı şəkildə ifadə olunmuşdur.</p>
+      <p>Sərgidə təqdim olunan rəsm işləri məktəb rəhbərliyi və təsviri incəsənət müəllimlərindən ibarət komissiya tərəfindən xüsusi meyarlar əsasında qiymətləndirilmişdir. Qiymətləndirmə zamanı rəsmlərin mövzuya uyğunluğu, yaradıcılıq səviyyəsi, ideyanın düzgün ifa olunması və bədii tərtibatı nəzərə alınmışdır.</p>
+    </div>
+  </div>
+  <div class="justify" style="font-size:9.1pt; margin-top:8px;">
+    <p>Münsiflər heyətinin qərarına əsasən ən yaxşı rəsm işləri seçilmiş və fərqlənən şagirdlər məktəbin direktoru <strong>Əliheydər Əlifli</strong> tərəfindən "Diplom"la mükafatlandırılmışdır. Belə tədbirlərin keçirilməsi şagirdlərin zərərli vərdişlərdən uzaq durmasına, sağlam düşüncə tərzinin formalaşmasına və cəmiyyət üçün faydalı, məsuliyyətli və sağlam gənclər yetişməsinə mühüm töhfə verir. Məktəb rəhbərliyi gələcəkdə də bu kimi maarifləndirici və yaradıcı tədbirlərin davam etdirilməsini planlaşdırır. Meyarlara uyğun və fərqlənən rəsm əsərlərinin müəllifi olan şagirdlər "Diplom"larla təltif olunmuş, onların yaradıcılıq fəaliyyəti yüksək qiymətləndirilmişdir. Təltif olunan şagirdlərə gələcəkdə də bu kimi tədbirlərdə fəal iştirak etmələri və yaradıcılıqlarını davam etdirmələri tövsiyə olunmuşdur.</p>
+  </div>
+  <div class="footbar"><div class="badge">6</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 7 — Komissiya 1: Media və İnformasiya                   -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="committee-title">BMŞ-in Komanda Üzvləri</div>
+  <div class="committee-sub">1. Media və İnformasiya Komissiyası</div>
+  <hr class="committee-hr">
+
+  <div class="photo-grid" id="grid6"></div>
+
+  <div class="members-list">
+    <strong>Komissiyanın tərkibi (Protokol N°___, 09.05.2026):</strong>
+    <ol>
+      <li>Niftiyeva İnci</li>
+      <li>Eyvazlı Cavid</li>
+      <li>Mirzəyev Kamal</li>
+      <li>Paşazadə Oğuz</li>
+    </ol>
+  </div>
+
+  <div class="committee-body justify">
+    <p><strong>Komissiyanın məqsədi və fəaliyyət istiqamətləri:</strong> İnformasiya və Maarifləndirmə Komissiyası məktəbdaxili informasiya mübadiləsinin sistemli və məqsədyönlü şəkildə təşkili, şagirdlərin aktual mövzular üzrə məlumatlandırılması və maarifləndirilməsi məqsədilə fəaliyyət göstərir.</p>
+    <p>Komissiyanın əsas hədəfi şagirdlərdə sosial məsuliyyət, hüquqi və etik davranış, sağlam həyat tərzi, təhlükəsizlik qaydaları və məktəb mühitində müsbət psixoloji iqlimin formalaşdırılmasına dəstək olmaqdır.</p>
+    <p>Komissiya müxtəlif tematik təqdimatlar, maarifləndirici söhbətlər, sorğular, poster və bukletlərin hazırlanması, sosial aksiyaların təşkili vasitəsilə şagirdlərin məlumatlılıq səviyyəsinin artırılmasına xidmət edir. Eyni zamanda məktəbin digər komissiyaları və pedaqoji heyəti ilə əməkdaşlıq çərçivəsində informasiya idarəetməsinin koordinasiyalı şəkildə həyata keçirilməsini təmin edir.</p>
+    <p>Fəaliyyət prosesində şagirdlərin təşəbbüskarlığı, liderlik bacarıqları və komanda şəklində işləmə vərdişləri inkişaf etdirilir, onların ictimai fəallığının artırılması istiqamətində sistemli iş aparılır.</p>
+  </div>
+  <div class="footbar"><div class="badge">7</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 8 — Komissiya 2: Təhlükəsizlik Nəzarət                  -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="committee-title">BMŞ-in Komanda Üzvləri</div>
+  <div class="committee-sub">2. Təhlükəsizlik Nəzarət Komissiyası</div>
+  <hr class="committee-hr">
+
+  <div class="photo-grid" id="grid7"></div>
+
+  <div class="members-list">
+    <strong>Üzvlər (Protokol N°___, 09.05.2026):</strong>
+    <ol>
+      <li>Xudaverdiyev Murad</li>
+      <li>Təhməzov Cəbrayıl</li>
+      <li>Şirinli Banu</li>
+      <li>Qorçuyeva Asya</li>
+      <li>Paşazadə Xatirə</li>
+      <li>Əliyev Fərid</li>
+    </ol>
+  </div>
+
+  <div class="committee-body justify">
+    <p>Təhlükəsizlik Nəzarət Komissiyası məktəbdə təhlükəsizlik qaydalarına əməl olunmasına nəzarət, şagirdlərin təhlükəsiz və sağlam mühitdə təhsil almasına dəstək göstərilməsi məqsədilə yaradılmış şagird komandasından ibarətdir.</p>
+    <p>Komissiya məktəb ərazisində təhlükəsizlik qaydalarının qorunması, mövcud risklərin müəyyənləşdirilməsi, şagirdlərin təhlükəsizlik qaydaları barədə maarifləndirilməsi və mümkün təhlükələrin qarşısının alınmasına yönəlmiş tədbirlərin təşkilini həyata keçirir.</p>
+    <p>Eyni zamanda, komissiya məktəbdaxili təhlükəsizlik məsələləri ilə bağlı müşahidə və təklifləri aidiyyəti şəxslərə çatdırır, təhlükəsizlik mədəniyyətinin formalaşdırılmasına və məktəb mühitində nizam-intizamın qorunmasına töhfə verir.</p>
+  </div>
+  <div class="footbar"><div class="badge">8</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 9 — Komissiya 3: İctimai İşlər                          -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="committee-title">BMŞ-in Komanda Üzvləri</div>
+  <div class="committee-sub">3. İctimai İşlərin Təşkili Komissiyası</div>
+  <hr class="committee-hr">
+
+  <div class="photo-grid" id="grid8"></div>
+
+  <div class="members-list">
+    <strong>Komissiyanın üzvləri:</strong>
+    <ol>
+      <li>Məlikova Nəcibə</li>
+      <li>Cəlalzadə Aysu</li>
+      <li>Rafikov Turan</li>
+      <li>Babayeva Səma</li>
+      <li>Məmmədzadə İnci</li>
+      <li>Bədəlov Ömər</li>
+      <li>Məmmədova Məryəm</li>
+      <li>Zeynallı Bəhram</li>
+    </ol>
+  </div>
+
+  <div class="committee-body justify">
+    <p>Komissiyanın əsas məqsədi məktəbdə ictimai işlərin təşkili, şagirdlərin sosial aktivliyinin artırılması və məktəb həyatında iştirakının gücləndirilməsidir. Komissiya fərdi və qrup layihələri, sosial aksiyalar və tədbirlərin planlaşdırılması və icrasını həyata keçirir, həmçinin məktəb ictimaiyyəti ilə səmərəli əməkdaşlıq mexanizmlərini formalaşdırır.</p>
+    <p><strong>Fəaliyyət prinsipləri:</strong> ədalətlilik və bərabərlik, şagird təşəbbüskarlığının dəstəklənməsi, məktəb qaydalarına riayət, şəffaflıq və yaradıcılığın təşviqi.</p>
+  </div>
+  <div class="footbar"><div class="badge">9</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 10 — Komissiya 4: Sosial-psixoloji                      -->
+<!-- ============================================================ -->
+<div class="page">
+  <div class="committee-title">BMŞ-in Komanda Üzvləri</div>
+  <div class="committee-sub">4. Bullinqlə Mübarizə Şurası — Sosial-Psixoloji Dəstək Komissiyası</div>
+  <hr class="committee-hr">
+
+  <div class="photo-grid" id="grid9"></div>
+
+  <div class="members-list">
+    <strong>Üzvlər (Protokol N°___, 09.05.2026):</strong>
+    <ol>
+      <li>Xurşudlu Selcan Tural qızı</li>
+      <li>Camallı İnci Rasim qızı</li>
+      <li>Dadaşova Almara Rza qızı</li>
+      <li>Əlizadə Ümid Ceyhun oğlu</li>
+      <li>Eyubova Nərmin Namiq qızı</li>
+      <li>Rüstəmova Ayşən Niyaməddin qızı</li>
+    </ol>
+  </div>
+
+  <div class="committee-body justify">
+    <p>Sosial-psixoloji dəstək komissiyası məktəb mühitində şagirdlərin emosional və sosial rifahını dəstəkləmək, onların psixoloji sağlamlığını qorumaq məqsədilə fəaliyyət göstərir. Komissiya aşağıdakı fəaliyyətləri həyata keçirir: şagirdlər arasında sosial-emosional münasibətləri möhkəmləndirmək və qarşılıqlı hörməti təşviq etmək; məktəbdə yaranan konflikt və stress hallarının vaxtında aşkarlanması və həlli üçün dəstək göstərmək; fərdi və qrup halında psixoloji məsləhətlər və maarifləndirici seminarlar; sosial və psixoloji risk faktorlarının müəyyən olunması və onların qarşısının alınması üçün tövsiyələr hazırlamaq; həmçinin şagirdlərin sağlam psixoloji inkişafını təmin edən layihə və fəaliyyətlər həyata keçirmək.</p>
+    <p style="font-size:8.6pt; color:#5b5b5b;">Komissiyaya məktəb psixoloqları <strong>Aytən Məmmədova</strong> və <strong>Zülfiyyə Məsimova</strong> mütəmadi metodiki dəstək göstərir; komissiya məktəb direktoru <strong>Əliheydər Əlifli</strong>nin 09.05.2026 tarixli qərarı ilə yaradılmışdır (ətraflı — bax səh. 5).</p>
+  </div>
+  <div class="footbar"><div class="badge">10</div><div>205 NÖMRƏLİ MƏKTƏB &middot; YENİ DÖVR 205</div></div>
+</div>
+
+
+<script>
+  // === PAGE 8: Təhlükəsizlik Nəzarət Komissiyası ===
+  const grid7Names = [
+    "Xudaverdiyev Murad",
+    "Təhməzov Cəbrayıl",
+    "Şirinli Banu",
+    "Qorçuyeva Asya",
+    "Paşazadə Xatirə",
+    "Əliyev Fərid"
+  ];
+  const grid7Photos = [
+    "xudaverdiyev.jpeg",
+    "Təhməzov.jpeg",
+    "Şirinli.jpeg",
+    "Asya.jpeg",
+    "xatire.jpeg",
+    "ferid.jpeg"
+  ];
+  const grid7El = document.getElementById("grid7");
+  if (grid7El) {
+    grid7El.innerHTML = grid7Names.map((name, i) => `
+      <div class="member">
+        <span class="star s1">&#10022;</span>
+        <span class="star s2">&#10022;</span>
+        <span class="star s3">&#10022;</span>
+        <div class="photo-frame"><img src="${grid7Photos[i]}" alt="${name}"></div>
+        <div class="tag">${name}</div>
+      </div>
+    `).join("");
+  }
+
+  // === PAGE 10: Sosial-Psixoloji Dəstək ===
+  const bmsNames = [
+    "Xurşudlu Selcan Tural qızı",
+    "Camallı İnci Rasim qızı",
+    "Dadaşova Almara Rza qızı",
+    "Əlizadə Ümid Ceyhun oğlu",
+    "Eyubova Nərmin Namiq qızı",
+    "Rüstəmova Ayşən Niyaməddin qızı"
+  ];
+  const bmsPhotos = [
+    "bms-member6.jpg",
+    "bms-member3.jpg",
+    "bms-member2.jpg",
+    "bms-member4.jpg",
+    "bms-member5.jpg",
+    "bms-member1.jpg"
+  ];
+  const bmsGridIds = ["grid9"];
+  for (const id of bmsGridIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.innerHTML = bmsNames.map((name, i) => `
+      <div class="member">
+        <span class="star s1">&#10022;</span>
+        <span class="star s2">&#10022;</span>
+        <span class="star s3">&#10022;</span>
+        <div class="photo-frame"><img src="${bmsPhotos[i]}" alt="${name}"></div>
+        <div class="tag">${name}</div>
+      </div>
+    `).join("");
+  }
+
+  // === PAGE 9: İctimai İşlərin Təşkili Komissiyası ===
+  const grid8Names = [
+    "Məlikova Nəcibə",
+    "Cəlalzadə Aysu",
+    "Rafikov Turan",
+    "Babayeva Səma",
+    "Məmmədzadə İnci",
+    "Bədəlov Ömər",
+    "Məmmədova Məryəm",
+    "Zeynallı Bəhram"
+  ];
+  const grid8Photos = [
+    "ictimai-member3.jpg",
+    "ictimai-member1.jpg",
+    "ictimai-member7.jpg",
+    "ictimai-member5.jpg",
+    "ictimai-member4.jpg",
+    "ictimai-member6.jpg",
+    "ictimai-member8.jpg",
+    "ictimai-member2.jpg"
+  ];
+  const grid8El = document.getElementById("grid8");
+  if (grid8El) {
+    grid8El.innerHTML = grid8Names.map((name, i) => `
+      <div class="member">
+        <span class="star s1">&#10022;</span>
+        <span class="star s2">&#10022;</span>
+        <span class="star s3">&#10022;</span>
+        <div class="tag tag-top">${name}</div>
+        <div class="photo-frame"><img src="${grid8Photos[i]}" alt="${name}"></div>
+      </div>
+    `).join("");
+  }
+
+  // === PAGE 7: Media və İnformasiya Komissiyası ===
+  const grid6Names = [
+    "Niftiyeva İnci",
+    "Eyvazlı Cavid",
+    "Mirzəyev Kamal",
+    "Paşazadə Oğuz"
+  ];
+  const grid6Photos = [
+    "media-member1.jpg",
+    "media-member2.jpg",
+    "media-member3.jpg",
+    "media-member4.jpg"
+  ];
+  const grid6El = document.getElementById("grid6");
+  if (grid6El) {
+    grid6El.innerHTML = grid6Names.map((name, i) => `
+      <div class="member">
+        <span class="star s1">&#10022;</span>
+        <span class="star s2">&#10022;</span>
+        <span class="star s3">&#10022;</span>
+        <div class="photo-frame"><img src="${grid6Photos[i]}" alt="${name}"></div>
+        <div class="tag">${name}</div>
+      </div>
+    `).join("");
+  }
+</script>
+
+</body>
+</html>

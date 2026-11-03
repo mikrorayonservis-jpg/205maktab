@@ -1,0 +1,56 @@
+{
+  "name": "qezet-205-mekteb",
+  "version": "2.0.0",
+  "description": "Rövşən İmanov adına 205 nömrəli məktəbin rəqəmsal platforması: rəsmi sayt, xəbər redaksiyası, elektron jurnal, idarəetmə paneli",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
+    "predev": "npm run clean",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:migrate:test": "node scripts/db-migrate.mjs --test",
+    "admin:create": "node scripts/admin-create.mjs",
+    "admin:disable-legacy": "node scripts/disable-legacy-admin.mjs",
+    "user:status": "node scripts/user-status.mjs",
+    "seed:content": "node scripts/seed-content.mjs",
+    "seed:dev": "node scripts/seed-dev.mjs",
+    "import:newspaper": "node scripts/import-newspaper.mjs",
+    "backup": "node scripts/backup.mjs",
+    "restore": "node scripts/restore.mjs",
+    "test:unit": "node --experimental-strip-types --no-warnings --test \"tests/unit/*.test.mjs\"",
+    "test:integration": "node tests/integration/run.mjs",
+    "test": "npm run test:unit && npm run test:integration",
+    "verify": "npm run typecheck && npm run test:unit && npm run build && npm run test:integration"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "clsx": "^2.1.0",
+    "lucide-react": "^1.66.0",
+    "mysql2": "^3.11.0",
+    "next": "15.5.28",
+    "next-themes": "^0.4.0",
+    "nodemailer": "^6.9.16",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.34.0",
+    "tailwind-merge": "^2.5.0",
+    "tailwindcss": "^4.3.3",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.0",
+    "typescript": "^5.6.0"
+  }
+}
