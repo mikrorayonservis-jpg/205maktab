@@ -208,6 +208,47 @@ export async function transitionArticle(user: CurrentUser, id: number, action: T
   return { status: t.to };
 }
 
+export const bulkPublishSchema = z.object({
+  // Valideyn razılığının alındığının açıq təsdiqi məcburidir
+  consentConfirmed: z.literal(true, { errorMap: () => ({ message: "Valideyn razılığını təsdiqləyin." }) }),
+  includeGalleries: z.boolean().default(true),
+});
+
+/**
+ * Yoxlama növbəsindəki (pending + approved) bütün məqalələri bir dəfəyə dərc edir.
+ * Yalnız news.review + news.publish olan istifadəçi; razılıq təsdiqi və hər məqalə üçün audit/reviziya qeydi yazılır.
+ * Toplu dərcdə istifadəçilərə ayrı-ayrı bildiriş göndərilmir (yüzlərlə bildiriş olmasın deyə).
+ */
+export async function bulkPublishQueue(user: CurrentUser, input: z.infer<typeof bulkPublishSchema>, req?: NextRequest) {
+  if (!can(user, "news.publish") || !can(user, "news.review")) throw Errors.forbidden();
+  return transaction(async (tx) => {
+    const rows = await tx.query<{ id: number; status: NewsStatus; gallery_id: number | null; contains_minors: number; consent_confirmed: number }>(
+      "SELECT id, status, gallery_id, contains_minors, consent_confirmed FROM news WHERE status IN ('pending','approved') AND deleted_at IS NULL ORDER BY id FOR UPDATE"
+    );
+    const note = "Toplu dərc: valideyn razılığı dərc edən tərəfindən təsdiqləndi.";
+    for (const r of rows) {
+      await tx.execute(
+        `UPDATE news SET status = 'published', consent_confirmed = 1, approved_by = COALESCE(approved_by, ?), published_by = ?,
+                published_at = COALESCE(published_at, NOW()) WHERE id = ?`,
+        [user.id, user.id, r.id]
+      );
+      await tx.execute(
+        "INSERT INTO news_revisions (news_id, action, status_from, status_to, change_reason, changed_by) VALUES (?, 'bulk_publish', ?, 'published', ?, ?)",
+        [r.id, r.status, note, user.id]
+      );
+      await audit({ userId: user.id, action: "news.bulk_publish", entityType: "news", entityId: r.id, oldValues: { status: r.status, consent_confirmed: r.consent_confirmed }, newValues: { status: "published", consent_confirmed: 1 }, req }, tx);
+    }
+    let galleries = 0;
+    const galleryIds = rows.map((r) => r.gallery_id).filter((g): g is number => Boolean(g));
+    if (input.includeGalleries && galleryIds.length) {
+      const res = await tx.execute("UPDATE galleries SET consent_confirmed = 1, is_published = 1 WHERE id IN (?) AND deleted_at IS NULL AND is_published = 0", [galleryIds]);
+      galleries = res.affectedRows;
+      await audit({ userId: user.id, action: "gallery.bulk_publish", entityType: "galleries", newValues: { ids: galleryIds, consent_confirmed: 1 }, req }, tx);
+    }
+    return { published: rows.length, galleries };
+  });
+}
+
 export async function deleteArticle(user: CurrentUser, id: number, req?: NextRequest) {
   const a = await load(id);
   const allowed = can(user, "news.edit_any") || (a.created_by === user.id && a.status === "draft");

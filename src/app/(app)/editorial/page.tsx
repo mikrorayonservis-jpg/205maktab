@@ -10,6 +10,7 @@ import { Badge, EmptyState, PageHeader } from "@/components/ui/Feedback";
 import { LinkButton } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import { STATUS_TONE } from "@/components/app/news-status";
+import { BulkPublishButton } from "./BulkPublishButton";
 
 export const metadata: Metadata = { title: "Redaksiya" };
 
@@ -22,6 +23,8 @@ export default async function EditorialPage({ searchParams }: { searchParams: Pr
   const status = sp.status && sp.status in NEWS_STATUS ? (sp.status as NewsStatus) : undefined;
   const page = Math.max(1, Number(sp.page) || 1);
   const data = await editorialList(u, { scope, status, search: sp.q?.slice(0, 100), page });
+  const canBulk = can(u, "news.publish") && can(u, "news.review");
+  const queueTotal = canBulk ? (scope === "queue" && !status && !sp.q ? data.total : (await editorialList(u, { scope: "queue", page: 1 })).total) : 0;
   const tabs = staff ? [["queue", "Yoxlama növbəsi"], ["all", "Bütün məqalələr"], ["mine", "Mənim məqalələrim"]] : [["mine", "Mənim məqalələrim"]];
   const qs = (p: Record<string, string | undefined>) => {
     const m = { scope, status, q: sp.q, ...p };
@@ -30,7 +33,12 @@ export default async function EditorialPage({ searchParams }: { searchParams: Pr
   };
   return (
     <div>
-      <PageHeader title="Redaksiya" description="Məqalələr avtomatik dərc edilmir: müəllif → redaktor təsdiqi → baş redaktor dərci." actions={can(u, "news.submit") && <LinkButton href="/editorial/new"><Plus className="size-4" aria-hidden="true" /> Yeni məqalə</LinkButton>} />
+      <PageHeader title="Redaksiya" description="Məqalələr avtomatik dərc edilmir: müəllif → redaktor təsdiqi → baş redaktor dərci." actions={
+          <div className="flex flex-wrap gap-2">
+            {canBulk && <BulkPublishButton count={queueTotal} />}
+            {can(u, "news.submit") && <LinkButton href="/editorial/new"><Plus className="size-4" aria-hidden="true" /> Yeni məqalə</LinkButton>}
+          </div>
+        } />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {tabs.map(([k, l]) => <Link key={k} href={qs({ scope: k, page: undefined, status: undefined })} className={cn("rounded-full border px-3 py-1.5 text-sm", scope === k ? "border-primary bg-primary text-primary-ink" : "border-line hover:bg-surface-2")}>{l}</Link>)}
         <span className="mx-1 h-5 w-px bg-line" aria-hidden="true" />
