@@ -65,6 +65,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader title={`Xoş gəlmisiniz, ${u.firstName || u.fullName}`} description={`${WEEKDAYS_AZ[weekday - 1]}, ${formatDate(today)}${year ? ` · ${year.name} tədris ili` : ""}`} />
+      {u.roles.length === 0 && (
+        <Alert tone="info" title="Hesabınız rol təyinatı gözləyir">
+          Qeydiyyat tamamlandı, lakin hələ heç bir rol təyin edilməyib. Məktəb administrasiyası sizi şagird, valideyn və ya müəllim kimi
+          təsdiqlədikdən sonra müvafiq bölmələr açılacaq.
+        </Alert>
+      )}
       {!year && can(u, "school.manage") && (
         <Alert tone="warning" title="Aktiv tədris ili yoxdur">
           Jurnalın işləməsi üçün <Link href="/admin/r/school-years" className="font-medium text-primary underline">tədris ilini</Link> yaradıb aktivləşdirin.

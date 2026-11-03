@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
     if (res) setMsg(res.message);
   }
   return (
-    <div className="rounded-xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+    <div className="rounded-md border border-line bg-surface p-6 shadow-sm sm:p-8">
       <h1 className="text-2xl font-semibold">Parolun bərpası</h1>
       <p className="mt-1 text-sm text-ink-3">E-poçtunuzu daxil edin — bərpa keçidi göndəriləcək.</p>
       {msg ? (

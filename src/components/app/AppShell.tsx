@@ -51,7 +51,7 @@ export function AppShell({ nav, user, children }: { nav: NavGroup[]; user: { ful
   const sidebar = (
     <nav aria-label="Kabinet menyusu" className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-line px-4">
-        <Image src="/images/logo-64.png" alt="" width={32} height={32} />
+        <Image src="/assets/logo/logo-128.webp" alt="" width={32} height={32} />
         <div className="min-w-0 leading-tight">
           <p className="truncate font-display text-sm font-semibold">205 nömrəli məktəb</p>
           <p className="text-xs text-ink-3">Elektron jurnal</p>

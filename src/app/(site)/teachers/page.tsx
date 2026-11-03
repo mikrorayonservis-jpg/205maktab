@@ -39,7 +39,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold leading-snug group-hover:text-primary">{t.first_name} {t.last_name}</p>
-                    <p className="text-sm text-accent">{t.subject}</p>
+                    <p className="text-sm text-primary">{t.subject}</p>
                     {t.position_az && <p className="text-xs text-ink-3">{t.position_az}</p>}
                   </div>
                 </Link>

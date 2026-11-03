@@ -26,5 +26,10 @@ export function useSubmit() {
       setLoading(false);
     }
   }
-  return { loading, error, fields, run, setError };
+  /** Göndərməzdən əvvəl brauzerdə aşkarlanan sahə xətaları (server də eyni qaydanı yoxlayır). */
+  function invalid(f: Record<string, string>) {
+    setError("Formada səhvlər var.");
+    setFields(f);
+  }
+  return { loading, error, fields, run, setError, invalid };
 }

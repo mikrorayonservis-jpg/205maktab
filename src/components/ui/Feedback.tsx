@@ -42,7 +42,7 @@ type BadgeTone = "neutral" | "primary" | "accent" | "success" | "warning" | "dan
 const badgeTones: Record<BadgeTone, string> = {
   neutral: "bg-surface-2 text-ink-2",
   primary: "bg-primary-soft text-primary",
-  accent: "bg-accent-soft text-accent",
+  accent: "bg-primary-soft text-primary",
   success: "bg-success-soft text-success",
   warning: "bg-warning-soft text-warning",
   danger: "bg-danger-soft text-danger",

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.SITE_URL || "http://localhost:3000").replace(/\/$/, "");
   const iso = (v: string) => new Date(String(v).replace(" ", "T") + "+04:00");
-  const statics = ["", "/about", "/administration", "/teachers", "/news", "/events", "/gallery", "/documents", "/contact", "/privacy", "/terms"].map((p) => ({
+  const statics = ["", "/about", "/administration", "/teachers", "/achievements", "/news", "/events", "/gallery", "/documents", "/contact", "/privacy", "/terms"].map((p) => ({
     url: `${base}${p}`,
     changeFrequency: "weekly" as const,
     priority: p === "" ? 1 : 0.7,

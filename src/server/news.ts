@@ -273,12 +273,13 @@ const PUBLIC_COLS = `n.id, n.title_az AS title, n.slug, n.summary_az AS summary,
                      c.name_az AS category_name, c.slug AS category_slug, n.is_featured`;
 const PUBLIC_WHERE = "n.status = 'published' AND n.deleted_at IS NULL AND n.published_at <= NOW() AND (n.contains_minors = 0 OR n.consent_confirmed = 1)";
 
-export async function publishedNews(opts: { category?: string; q?: string; page?: number; pageSize?: number; excludeId?: number } = {}) {
+export async function publishedNews(opts: { category?: string; q?: string; page?: number; pageSize?: number; excludeId?: number; year?: number } = {}) {
   const where = [PUBLIC_WHERE];
   const params: unknown[] = [];
   if (opts.category) { where.push("c.slug = ?"); params.push(opts.category); }
   if (opts.q) { where.push("(n.title_az ILIKE ? OR n.summary_az ILIKE ?)"); const like = `%${opts.q.replace(/[%_]/g, "\\$&")}%`; params.push(like, like); }
   if (opts.excludeId) { where.push("n.id <> ?"); params.push(opts.excludeId); }
+  if (opts.year) { where.push("EXTRACT(YEAR FROM n.published_at AT TIME ZONE 'Asia/Baku')::int = ?"); params.push(opts.year); }
   const pageSize = opts.pageSize ?? 12;
   const page = Math.max(1, opts.page ?? 1);
   const total = await db.queryOne<{ n: number }>(`SELECT COUNT(*) AS n FROM news n LEFT JOIN news_categories c ON c.id = n.category_id WHERE ${where.join(" AND ")}`, params);

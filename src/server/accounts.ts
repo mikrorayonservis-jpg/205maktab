@@ -90,7 +90,44 @@ async function linkByInvitation(tx: Db, inv: InvitationRow, userId: number, name
   }
 }
 
+/**
+ * Ümumi qeydiyyat kodu (REGISTRATION_INVITE_CODE, yalnız serverdə). Kod YALNIZ qeydiyyata icazə verir:
+ * hesab heç bir rolsuz yaradılır, rolu səlahiyyətli administrator təyin edir (admin → İstifadəçilər).
+ */
+export function matchesGeneralInviteCode(code: string): boolean {
+  const secret = process.env.REGISTRATION_INVITE_CODE;
+  if (!secret) return false;
+  const a = Buffer.from(normalizeCode(code));
+  const b = Buffer.from(normalizeCode(secret));
+  return a.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/** Test mərhələsi üçün: REGISTRATION_AUTO_VERIFY=1 olduqda e-poçt təsdiqi tələb olunmur (SMTP hələ yoxdursa). */
+const autoVerify = () => process.env.REGISTRATION_AUTO_VERIFY === "1";
+
+async function registerWithGeneralCode(input: { email: string; password: string; firstName: string; lastName: string }) {
+  const passwordHash = await hashPassword(input.password);
+  const verified = autoVerify();
+  const userId = await transaction(async (tx) => {
+    const existing = await tx.queryOne("SELECT id FROM users WHERE email = ?", [input.email]);
+    if (existing) throw Errors.conflict("Bu e-poçt ilə hesab artıq mövcuddur.");
+    const res = await tx.execute(
+      `INSERT INTO users (email, first_name, last_name, password_hash, role, is_active, email_verified, email_verified_at, password_changed_at)
+       VALUES (?, ?, ?, ?, 'pending', 1, ?, ${verified ? "NOW()" : "NULL"}, NOW())`,
+      [input.email, input.firstName, input.lastName, passwordHash, verified ? 1 : 0]
+    );
+    await tx.execute(
+      "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, new_values) VALUES (?, 'user.register_general_code', 'user', ?, ?)",
+      [res.insertId, res.insertId, JSON.stringify({ roles: [], autoVerified: verified })]
+    );
+    return res.insertId;
+  });
+  if (!verified) await sendVerificationEmail(userId, input.email);
+  return { userId, verified, general: true };
+}
+
 export async function registerWithInvitation(input: { code: string; email: string; password: string; firstName: string; lastName: string }) {
+  if (matchesGeneralInviteCode(input.code)) return registerWithGeneralCode(input);
   const passwordHash = await hashPassword(input.password);
   const userId = await transaction(async (tx) => {
     const inv = await findValidInvitation(input.code, tx);
@@ -114,7 +151,7 @@ export async function registerWithInvitation(input: { code: string; email: strin
     return res.insertId;
   });
   await sendVerificationEmail(userId, input.email);
-  return { userId };
+  return { userId, verified: false, general: false };
 }
 
 /** Artıq hesabı olan istifadəçi (məs. ikinci uşağı olan valideyn) dəvət kodunu istifadə edir. */

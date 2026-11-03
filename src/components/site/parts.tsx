@@ -7,13 +7,13 @@ import type { PublicEvent } from "@/server/content";
 
 export function SectionHeading({ eyebrow, title, href, linkLabel, className }: { eyebrow?: string; title: string; href?: string; linkLabel?: string; className?: string }) {
   return (
-    <div className={cn("mb-6 flex items-end justify-between gap-4", className)}>
+    <div className={cn("mb-7 flex flex-wrap items-end justify-between gap-x-4 gap-y-2", className)}>
       <div>
-        {eyebrow && <p className="eyebrow mb-1.5">{eyebrow}</p>}
-        <h2 className="text-2xl font-semibold md:text-[1.75rem]">{title}</h2>
+        {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
+        <h2 className="text-2xl md:text-[1.875rem]">{title}</h2>
       </div>
       {href && (
-        <Link href={href} className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline">
+        <Link href={href} className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary hover:underline">
           {linkLabel ?? "Hamısı"} <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       )}
@@ -38,12 +38,12 @@ export function Breadcrumbs({ items }: { items: { href?: string; label: string }
 
 export function PageIntro({ eyebrow, title, children, crumbs }: { eyebrow?: string; title: string; children?: React.ReactNode; crumbs?: { href?: string; label: string }[] }) {
   return (
-    <div className="border-b border-line bg-surface">
-      <div className="container-page py-10 md:py-14">
+    <div className="border-b border-line bg-surface-2">
+      <div className="container-page py-9 md:py-12">
         {crumbs && <Breadcrumbs items={[{ href: "/", label: "Ana səhifə" }, ...crumbs]} />}
-        {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-        <h1 className="max-w-3xl text-3xl font-semibold md:text-4xl">{title}</h1>
-        {children && <div className="mt-3 max-w-2xl text-ink-2">{children}</div>}
+        {eyebrow && <p className="eyebrow mb-2.5">{eyebrow}</p>}
+        <h1 className="max-w-3xl text-[1.9rem] leading-tight md:text-[2.5rem]">{title}</h1>
+        {children && <div className="mt-3 max-w-2xl text-[1.0625rem] text-ink-2">{children}</div>}
       </div>
     </div>
   );
@@ -54,38 +54,39 @@ export function NewsCard({ item, variant = "default" }: { item: PublicNews; vari
     return (
       <article className="group flex gap-4 border-b border-line py-4 last:border-0">
         <div className="min-w-0 flex-1">
-          {item.category_name && <p className="mb-1 text-xs font-medium text-accent">{item.category_name}</p>}
-          <h3 className="font-display text-base font-semibold leading-snug">
+          {item.category_name && <p className="mb-1 text-xs font-semibold text-primary">{item.category_name}</p>}
+          <h3 className="font-display text-[15px] font-bold leading-snug">
             <Link href={`/news/${item.slug}`} className="hover:text-primary">{item.title}</Link>
           </h3>
           <p className="mt-1 text-xs text-ink-3"><time dateTime={item.published_at}>{formatDateLong(item.published_at)}</time></p>
         </div>
         {item.cover_image && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.cover_image} alt="" loading="lazy" className="size-20 shrink-0 rounded-md object-cover" />
+          <img src={item.cover_image} alt="" loading="lazy" className="size-20 shrink-0 rounded object-cover" />
         )}
       </article>
     );
   }
   const lead = variant === "lead";
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface transition-shadow hover:shadow-lift">
+    <article className="group flex h-full flex-col overflow-hidden rounded-md border border-line bg-surface transition-colors hover:border-primary/40">
       <Link href={`/news/${item.slug}`} className="block overflow-hidden bg-surface-2" tabIndex={-1} aria-hidden="true">
         {item.cover_image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.cover_image} alt="" loading={lead ? "eager" : "lazy"} className={cn("w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]", lead ? "aspect-[16/9]" : "aspect-[3/2]")} />
+          <img src={item.cover_image} alt={item.cover_alt || ""} loading={lead ? "eager" : "lazy"} className={cn("w-full object-cover", lead ? "aspect-[16/9]" : "aspect-[3/2]")} />
         ) : (
-          <div className={cn("flex w-full items-center justify-center text-ink-3", lead ? "aspect-[16/9]" : "aspect-[3/2]")}>
-            <span className="font-display text-3xl opacity-30">205</span>
+          <div className={cn("flex w-full items-center justify-center bg-surface-2", lead ? "aspect-[16/9]" : "aspect-[3/2]")}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/logo/logo-128.webp" alt="" className="size-16 object-contain opacity-40 grayscale" />
           </div>
         )}
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center gap-2 text-xs">
-          {item.category_name && <span className="font-medium text-accent">{item.category_name}</span>}
+          {item.category_name && <span className="font-semibold text-primary">{item.category_name}</span>}
           <span className="text-ink-3"><time dateTime={item.published_at}>{formatDate(item.published_at)}</time></span>
         </div>
-        <h3 className={cn("font-display font-semibold leading-snug", lead ? "text-2xl" : "text-lg")}>
+        <h3 className={cn("font-display font-bold leading-snug", lead ? "text-[1.4rem]" : "text-[1.0625rem]")}>
           <Link href={`/news/${item.slug}`} className="hover:text-primary">{item.title}</Link>
         </h3>
         {item.summary && <p className={cn("mt-2 text-sm text-ink-2", lead ? "line-clamp-4" : "line-clamp-3")}>{item.summary}</p>}
@@ -97,8 +98,8 @@ export function NewsCard({ item, variant = "default" }: { item: PublicNews; vari
 export function DateBadge({ value }: { value: string }) {
   const [y, m, d] = value.slice(0, 10).split("-");
   return (
-    <div className="flex w-14 shrink-0 flex-col items-center rounded-md border border-line bg-surface-2 py-1.5 text-center" aria-hidden="true">
-      <span className="text-xl font-semibold leading-none text-primary">{Number(d)}</span>
+    <div className="flex w-14 shrink-0 flex-col items-center rounded border border-line border-t-2 border-t-gold bg-surface py-1.5 text-center" aria-hidden="true">
+      <span className="font-display text-xl font-bold leading-none text-primary">{Number(d)}</span>
       <span className="mt-1 text-[11px] uppercase tracking-wide text-ink-3">{MONTHS_AZ[Number(m) - 1]?.slice(0, 3)}</span>
       <span className="sr-only">{y}</span>
     </div>
@@ -107,10 +108,10 @@ export function DateBadge({ value }: { value: string }) {
 
 export function EventRow({ ev }: { ev: PublicEvent }) {
   return (
-    <article className="flex gap-4 rounded-xl border border-line bg-surface p-4">
+    <article className="flex gap-4 rounded-md border border-line bg-surface p-4 transition-colors hover:border-primary/40">
       <DateBadge value={ev.start_datetime} />
       <div className="min-w-0">
-        <h3 className="font-display text-base font-semibold leading-snug">
+        <h3 className="font-display text-[15px] font-bold leading-snug">
           <Link href={`/events/${ev.slug}`} className="hover:text-primary">{ev.title}</Link>
         </h3>
         <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-3">

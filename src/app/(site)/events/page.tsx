@@ -66,7 +66,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                         <ul className="mt-1 space-y-1">
                           {evs.map((e) => (
                             <li key={e.id}>
-                              <Link href={`/events/${e.slug}`} className="block truncate rounded bg-accent-soft px-1 py-0.5 text-[11px] text-accent hover:underline" title={e.title}>{e.title}</Link>
+                              <Link href={`/events/${e.slug}`} className="block truncate rounded bg-primary-soft px-1 py-0.5 text-[11px] text-primary hover:underline" title={e.title}>{e.title}</Link>
                             </li>
                           ))}
                         </ul>

@@ -66,8 +66,8 @@ export default async function AboutPage() {
             <div className="rule-gold mb-3" aria-hidden="true" />
             <h2 id="photos-h" className="mb-4 text-2xl font-semibold">Məktəbin binası</h2>
             <figure className="overflow-hidden rounded-lg border border-line">
-              <Image src="/images/mekteb-bina.webp" alt="205 nömrəli tam orta məktəbin yeni binası" width={1280} height={650} className="w-full" sizes="(min-width: 1024px) 900px, 100vw" />
-              <figcaption className="bg-surface px-4 py-2 text-sm text-ink-3">2021-ci ildə istifadəyə verilmiş yeni məktəb binası</figcaption>
+              <Image src="/assets/images/mekteb-bina-1438.webp" alt="205 nömrəli tam orta məktəbin yeni binasının fasadı" width={1438} height={1094} className="aspect-[4/3] w-full object-cover" sizes="(min-width: 1024px) 900px, 100vw" />
+              <figcaption className="bg-surface px-4 py-2 text-sm text-ink-3">22 sentyabr 2021-ci ildə istifadəyə verilmiş yeni məktəb binası</figcaption>
             </figure>
           </section>
         </div>

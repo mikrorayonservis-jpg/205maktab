@@ -3,7 +3,7 @@
  */
 import "server-only";
 import { hash, verify } from "@node-rs/argon2";
-import { z } from "zod";
+import { passwordSchemaFor } from "../password-policy";
 
 const ARGON2ID = 2;
 const OPTIONS = { algorithm: ARGON2ID, memoryCost: 19456, timeCost: 2, parallelism: 1 } as const;
@@ -28,9 +28,5 @@ export async function fakeVerify(password: string): Promise<void> {
   await verifyPassword(dummyHash, password);
 }
 
-export const passwordSchema = z
-  .string()
-  .min(10, "Parol ən azı 10 simvol olmalıdır.")
-  .max(128, "Parol çox uzundur.")
-  .refine((p) => /[a-zəğıöşçü]/.test(p) && /[A-ZƏĞİÖŞÇÜ]/.test(p), "Parolda böyük və kiçik hərf olmalıdır.")
-  .refine((p) => /\d/.test(p), "Parolda ən azı bir rəqəm olmalıdır.");
+/** Aktiv parol siyasəti (src/lib/password-policy.ts; NEXT_PUBLIC_PASSWORD_POLICY ilə idarə olunur). */
+export const passwordSchema = passwordSchemaFor();

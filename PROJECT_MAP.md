@@ -240,6 +240,13 @@ Not inspectable from this session: live database contents (users, existing rows)
 - Internal journal renamed in UI to “Məktəbdaxili jurnal” with a not-official disclaimer.
 - ❓ Open question: which portal the school's teachers actually use (jurnal.edu.az vs digital.edu.az) — both are shown; admin can change URLs in Sayt parametrləri.
 
+### Redesign, general invite code, official content import (03.11.2026)
+
+- White institutional design: tokens in `globals.css` (#FFFFFF bg, #172B45 ink, #2457A6 primary, #EAF2FC soft, #E5EAF0 lines, #D6AE64 gold), Inter (body) + Manrope (headings) via `next/font` (latin-ext). New logo/photo: originals in `assets/originals/`, optimized in `public/assets/{logo,images}/`, favicon `src/app/icon.png`.
+- Header: contact strip + nav (desktop ≥1280px, drawer below; drawer rendered via portal because header `backdrop-filter` traps `position:fixed`). Homepage: 12 sections, empty ones hidden. New page `/achievements`.
+- Password policy `src/lib/password-policy.ts` (`NEXT_PUBLIC_PASSWORD_POLICY=strong|digits`, build-time, checked in browser and server). General code `REGISTRATION_INVITE_CODE` → account with role `pending` and no `user_roles`; `REGISTRATION_AUTO_VERIFY=1` skips email verification. Tests: `06-general-invite`.
+- `npm run import:official` imports bakimektebleri.edu.az/205 news + photos as **pending** news (contains_minors=1, consent 0) + unpublished galleries; dates exact only for the latest feed items, otherwise photo-upload time (approximate, noted in `review_note`). `--leadership` adds the 9 official leadership entries. Verified official facts in `SETTING_DEFS` defaults.
+
 ### Visual design (03.11.2026)
 
 - Warm “paper” palette + deep navy + gold (`globals.css` tokens), display serif **Noto Serif Display** via `next/font/google` (downloaded at build time, self-hosted → CSP `font-src 'self'` unchanged; build needs internet once).

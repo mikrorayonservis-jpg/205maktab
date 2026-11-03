@@ -43,7 +43,7 @@ console.log("▶ Server işə salınır:", BASE);
 const nextBin = require.resolve("next/dist/bin/next");
 const server = spawn(process.execPath, [nextBin, "start", "-p", String(PORT)], {
   cwd: ROOT,
-  env: { ...process.env, DATABASE_URL: testUrl, STORAGE_DIR: "storage-test", SUPABASE_SECRET_KEY: "", VERCEL: "", SITE_URL: BASE, SMTP_HOST: "", NODE_ENV: "production", TRUST_PROXY: "1" },
+  env: { ...process.env, DATABASE_URL: testUrl, STORAGE_DIR: "storage-test", SUPABASE_SECRET_KEY: "", VERCEL: "", REGISTRATION_INVITE_CODE: "test-umumi-kod", REGISTRATION_AUTO_VERIFY: "1", SITE_URL: BASE, SMTP_HOST: "", NODE_ENV: "production", TRUST_PROXY: "1" },
   stdio: ["ignore", "pipe", "pipe"],
 });
 let serverLog = "";

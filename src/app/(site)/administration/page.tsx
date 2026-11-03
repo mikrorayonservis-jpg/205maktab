@@ -62,7 +62,7 @@ export default async function AdministrationPage() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-lg font-semibold">{p.full_name}</h3>
-                    <p className="text-sm text-accent">{p.position_az}</p>
+                    <p className="text-sm text-primary">{p.position_az}</p>
                     <Facts p={p} compact />
                     {p.bio_az && <div className="prose-az mt-3 text-sm" dangerouslySetInnerHTML={{ __html: renderMarkdown(p.bio_az) }} />}
                   </div>

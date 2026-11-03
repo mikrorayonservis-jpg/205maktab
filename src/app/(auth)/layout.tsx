@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-screen flex-col">
       <header className="container-page flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/images/logo-64.png" alt="" width={36} height={36} />
+          <Image src="/assets/logo/logo-128.webp" alt="" width={36} height={36} />
           <span className="font-display font-semibold">205 nömrəli məktəb</span>
         </Link>
         <ThemeToggle />

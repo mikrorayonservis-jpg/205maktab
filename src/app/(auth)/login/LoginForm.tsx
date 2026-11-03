@@ -38,7 +38,7 @@ export function LoginForm({ next }: { next: string }) {
   }
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+    <div className="rounded-md border border-line bg-surface p-6 shadow-sm sm:p-8">
       <h1 className="text-2xl font-semibold">Elektron jurnala giriş</h1>
       <p className="mt-1 text-sm text-ink-3">Şagird, valideyn və əməkdaşlar üçün</p>
       <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>

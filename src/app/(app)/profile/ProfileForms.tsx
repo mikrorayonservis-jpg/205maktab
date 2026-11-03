@@ -1,4 +1,5 @@
 "use client";
+import { checkPassword, passwordHint, passwordInputProps } from "@/lib/password-policy";
 import { useEffect, useState } from "react";
 import { Monitor } from "lucide-react";
 import { api } from "@/lib/client/api";
@@ -10,12 +11,15 @@ import { Alert, Badge } from "@/components/ui/Feedback";
 import { useToast } from "@/components/ui/Toast";
 
 export function ChangePasswordForm() {
-  const { loading, error, fields, run } = useSubmit();
+  const { loading, error, fields, run, invalid } = useSubmit();
   const toast = useToast();
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-    const body = Object.fromEntries(new FormData(form));
+    const body = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    const pw = checkPassword(body.password || "");
+    if (pw) return invalid({ password: pw });
+    if (body.password !== body.passwordConfirm) return invalid({ passwordConfirm: "Parollar uyğun gəlmir." });
     const res = await run(() => api<{ message: string }>("/api/auth/change-password", { body }));
     if (res) {
       toast.success(res.message);
@@ -28,11 +32,11 @@ export function ChangePasswordForm() {
       <FormField id="currentPassword" label="Cari parol" error={fields.currentPassword} required>
         <Input id="currentPassword" name="currentPassword" type="password" autoComplete="current-password" required />
       </FormField>
-      <FormField id="password" label="Yeni parol" error={fields.password} hint="Ən azı 10 simvol, böyük və kiçik hərf, rəqəm." required>
-        <Input id="password" name="password" type="password" autoComplete="new-password" required />
+      <FormField id="password" label="Yeni parol" error={fields.password} hint={passwordHint()} required>
+        <Input id="password" name="password" type="password" autoComplete="new-password" required {...passwordInputProps()} />
       </FormField>
       <FormField id="passwordConfirm" label="Yeni parolun təkrarı" error={fields.passwordConfirm} required>
-        <Input id="passwordConfirm" name="passwordConfirm" type="password" autoComplete="new-password" required />
+        <Input id="passwordConfirm" name="passwordConfirm" type="password" autoComplete="new-password" required {...passwordInputProps()} />
       </FormField>
       <div><Button type="submit" loading={loading}>Parolu yenilə</Button></div>
     </form>
