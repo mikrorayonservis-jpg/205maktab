@@ -31,6 +31,7 @@
     "test:unit": "node --experimental-strip-types --no-warnings --test \"tests/unit/*.test.mjs\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "user:status": "node scripts/user-status.mjs",
+    "user:verify-email": "node scripts/verify-email.mjs",
     "verify": "npm run typecheck && npm run test:unit && npm run build && npm run test:integration"
   },
   "dependencies": {

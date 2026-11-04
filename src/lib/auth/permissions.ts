@@ -10,7 +10,7 @@ export type RoleCode =
 
 export type Permission =
   | "admin.access" | "users.view" | "users.manage" | "roles.manage" | "invitations.manage" | "school.manage"
-  | "students.view_all" | "students.manage" | "teachers.manage" | "parents.link"
+  | "students.view_all" | "students.manage" | "classes.manage" | "students.enroll" | "teachers.manage" | "parents.link"
   | "schedule.view_all" | "schedule.manage" | "grades.view_all" | "grades.manage_own" | "grades.manage_all"
   | "attendance.view_all" | "attendance.manage_own" | "attendance.manage_all"
   | "homework.manage_own" | "homework.view_all" | "reports.view"

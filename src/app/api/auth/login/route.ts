@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { z, email } from "@/lib/validation";
 import { verifyPassword, fakeVerify } from "@/lib/auth/password";
 import { createSession, setSessionCookie } from "@/lib/auth/session";
-import { enforce, enforceIp } from "@/lib/rate-limit";
+import { enforce, enforceIp, resetLimit } from "@/lib/rate-limit";
 
 const schema = z.object({ email, password: z.string().min(1).max(200) });
 const GENERIC = "E-poçt və ya parol yanlışdır.";
@@ -48,6 +48,8 @@ export const POST = route(async ({ req }) => {
   }
 
   await db.execute("UPDATE users SET failed_login_count = 0, locked_until = NULL, last_login_at = NOW() WHERE id = ?", [user.id]);
+  // Uğurlu giriş hesab üzrə sayğacı sıfırlayır: əks halda 15 dəqiqədə 9-cu (uğurlu) giriş də "uğursuz cəhd" kimi bloklanırdı
+  await resetLimit(`login:email:${input.email}`);
   await log(true, "ok");
   const token = await createSession(user.id, { ip, userAgent: ua });
   const res = ok({ redirect: "/dashboard" });

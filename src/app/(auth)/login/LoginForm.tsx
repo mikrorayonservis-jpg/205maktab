@@ -1,17 +1,21 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { useSubmit } from "@/lib/client/useSubmit";
 import { Button } from "@/components/ui/Button";
-import { FormField, Input } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Feedback";
+import { AuthInput } from "@/components/auth/AuthInput";
+import { AuthLoading } from "@/components/auth/AuthLoading";
+import { cn } from "@/lib/utils";
 
+// Giriş məntiqi dəyişməyib: /api/auth/login, təsdiqlənməmiş e-poçt üçün yenidən göndərmə, təhlükəsiz `next` yönləndirməsi.
 export function LoginForm({ next }: { next: string }) {
-  const [show, setShow] = useState(false);
   const [unverified, setUnverified] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [shake, setShake] = useState(false);
   const { loading, error, fields, run } = useSubmit();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -28,7 +32,13 @@ export function LoginForm({ next }: { next: string }) {
         throw err;
       }
     });
-    if (ok) window.location.assign(next);
+    if (ok) {
+      // Yüklənmə örtüyü yönləndirmə bitənə qədər qalır
+      setLeaving(true);
+      window.location.assign(next);
+    } else {
+      setShake(true);
+    }
   }
 
   async function resend() {
@@ -38,35 +48,42 @@ export function LoginForm({ next }: { next: string }) {
   }
 
   return (
-    <div className="rounded-md border border-line bg-surface p-6 shadow-sm sm:p-8">
-      <h1 className="text-2xl font-semibold">Elektron jurnala giriş</h1>
-      <p className="mt-1 text-sm text-ink-3">Şagird, valideyn və əməkdaşlar üçün</p>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
-        {error && <Alert tone="danger">{error}</Alert>}
-        {unverified && (
-          <Alert tone="info">
-            {resent ? "Yeni təsdiq keçidi göndərildi." : <button type="button" onClick={resend} className="font-medium text-primary underline">Təsdiq keçidini yenidən göndər</button>}
-          </Alert>
-        )}
-        <FormField id="email" label="E-poçt" error={fields.email} required>
-          <Input id="email" name="email" type="email" autoComplete="username" required aria-invalid={Boolean(fields.email)} />
-        </FormField>
-        <FormField id="password" label="Parol" error={fields.password} required>
-          <div className="relative">
-            <Input id="password" name="password" type={show ? "text" : "password"} autoComplete="current-password" required className="pr-10" />
-            <button type="button" onClick={() => setShow((s) => !s)} className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-ink-3 hover:text-ink" aria-label={show ? "Parolu gizlət" : "Parolu göstər"} aria-pressed={show}>
-              {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            </button>
+    <>
+      <div className="login-stagger">
+        <header className="text-center">
+          <h1 className="font-display text-[1.75rem] font-bold leading-tight text-ink">Xoş gəlmisiniz</h1>
+          <p className="mt-1.5 text-sm text-ink-3">Qiymətlər, dərs cədvəli və ev tapşırıqları sizi gözləyir</p>
+        </header>
+
+        <form onSubmit={onSubmit} noValidate className={cn("mt-7 space-y-3.5", shake && "login-shake")} onAnimationEnd={() => setShake(false)}>
+          {error && <Alert tone="danger">{error}</Alert>}
+          {unverified && (
+            <Alert tone="info">
+              {resent ? "Yeni təsdiq keçidi göndərildi." : <button type="button" onClick={resend} className="font-medium text-primary underline">Təsdiq keçidini yenidən göndər</button>}
+            </Alert>
+          )}
+          <AuthInput id="email" name="email" type="email" label="E-poçt" icon={Mail} placeholder="E-poçt ünvanınız" autoComplete="username" inputMode="email" required error={fields.email} />
+          <AuthInput id="password" name="password" type="password" label="Parol" icon={Lock} placeholder="Parolunuz" autoComplete="current-password" required error={fields.password} />
+          <div className="flex justify-end pt-0.5">
+            <Link href="/forgot-password" className="rounded text-sm font-medium text-[var(--login-accent)] hover:underline">Parolu unutmusunuz?</Link>
           </div>
-        </FormField>
-        <div className="flex justify-end text-sm">
-          <Link href="/forgot-password" className="text-primary hover:underline">Parolu unutmusunuz?</Link>
-        </div>
-        <Button type="submit" className="w-full" size="lg" loading={loading}>Daxil ol</Button>
-      </form>
-      <p className="mt-6 border-t border-line pt-4 text-center text-sm text-ink-3">
-        Hesabınız yoxdur? <Link href="/register" className="font-medium text-primary hover:underline">Dəvət kodu ilə qeydiyyat</Link>
-      </p>
-    </div>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={loading || leaving}
+            className="group h-14 w-full rounded-xl bg-[image:var(--login-btn)] text-[15px] font-semibold text-white shadow-[0_8px_20px_-10px_rgb(20_43_99/0.6)] hover:bg-[image:var(--login-btn-hover)]"
+          >
+            Daxil ol
+            <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" aria-hidden="true" />
+          </Button>
+        </form>
+
+        <p className="mt-8 text-center text-sm text-ink-3">
+          Hesabınız yoxdur?{" "}
+          <Link href="/register" className="font-semibold text-[var(--login-accent)] hover:underline">Dəvət kodu ilə qeydiyyat</Link>
+        </p>
+      </div>
+      {(loading || leaving) && <AuthLoading title="Daxil olunur" subtitle={leaving ? "Kabinetiniz hazırlanır" : "Məlumatlar yoxlanılır"} />}
+    </>
   );
 }
