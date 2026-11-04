@@ -57,7 +57,7 @@ export function MainNav({ items, loggedIn = false }: { items: Item[]; loggedIn?:
                 aria-haspopup="true"
                 onClick={() => setOpen(open === it.label ? null : it.label)}
                 className={cn(
-                  "inline-flex items-center gap-1 border-b-2 border-transparent px-3.5 text-[15px] font-medium text-ink-2 transition-colors hover:text-primary",
+                  "inline-flex items-center whitespace-nowrap gap-1 border-b-2 border-transparent px-3.5 text-[15px] font-medium text-ink-2 transition-colors hover:text-primary",
                   it.children.some((c) => isActive(path, c.href)) && "border-primary text-primary"
                 )}
               >
@@ -83,7 +83,7 @@ export function MainNav({ items, loggedIn = false }: { items: Item[]; loggedIn?:
               key={it.href}
               href={it.href}
               aria-current={isActive(path, it.href) ? "page" : undefined}
-              className={cn("inline-flex items-center border-b-2 border-transparent px-3.5 text-[15px] font-medium text-ink-2 transition-colors hover:text-primary", isActive(path, it.href) && "border-primary text-primary")}
+              className={cn("inline-flex items-center whitespace-nowrap border-b-2 border-transparent px-3.5 text-[15px] font-medium text-ink-2 transition-colors hover:text-primary", isActive(path, it.href) && "border-primary text-primary")}
             >
               {it.label}
             </Link>

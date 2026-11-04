@@ -31,7 +31,7 @@ export async function SiteFooter() {
             <p className="font-display text-base font-bold leading-snug text-white">
               Rövşən İmanov adına
               <br />
-              205 nömrəli tam orta məktəb
+              205 nömrəli tam orta ümumtəhsil məktəbi
             </p>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-white/70">{s.school_name}. {s.founded_year}-cu ildən fəaliyyət göstərir.</p>

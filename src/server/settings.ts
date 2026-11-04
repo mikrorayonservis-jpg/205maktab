@@ -4,7 +4,7 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 
 export const SETTING_DEFS = {
-  school_name: { label: "Məktəbin tam rəsmi adı", default: "Binəqədi rayonu Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi", multiline: false },
+  school_name: { label: "Məktəbin tam rəsmi adı", default: "Bakı şəhəri Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi", multiline: false },
   school_short_name: { label: "Qısa ad", default: "205 nömrəli məktəb", multiline: false },
   hero_title: { label: "Ana səhifə — başlıq", default: "Bilik, dəyər və vətənpərvərlik — 1930-cu ildən bəri", multiline: false },
   hero_text: {
@@ -23,7 +23,7 @@ export const SETTING_DEFS = {
   result_admitted: { label: "Ali məktəbə qəbul olanlar", default: "63", multiline: false },
   result_600: { label: "600-dən yuxarı bal toplayanlar", default: "5", multiline: false },
   stat_capacity: { label: "Layihə tutumu (şagird)", default: "960", multiline: false },
-  address: { label: "Ünvan", default: "Bakı şəhəri, Binəqədi rayonu, II Mədən, korpus 93", multiline: false },
+  address: { label: "Ünvan", default: "Bakı şəhəri, II Mədən, korpus 93", multiline: false },
   phone: { label: "Telefon (ictimai)", default: "411-19-98", multiline: false },
   email: { label: "E-poçt (ictimai)", default: "205mekteb@baku.edu.gov.az", multiline: false },
   working_hours: { label: "İş rejimi", default: "5 günlük iş həftəsi, 2 növbə", multiline: false },

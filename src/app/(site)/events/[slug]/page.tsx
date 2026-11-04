@@ -36,7 +36,7 @@ export default async function EventPage({ params }: Props) {
           startDate: iso(e.start_datetime),
           endDate: e.end_datetime ? iso(e.end_datetime) : undefined,
           eventStatus: e.status === "cancelled" ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
-          location: { "@type": "Place", name: e.location || "205 nömrəli tam orta məktəb", address: "Bakı, Binəqədi rayonu" },
+          location: { "@type": "Place", name: e.location || "205 nömrəli tam orta ümumtəhsil məktəbi", address: "Bakı" },
           description: plainText(e.description, 300),
         }}
       />
