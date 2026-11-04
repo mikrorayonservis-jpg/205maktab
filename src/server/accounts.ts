@@ -8,6 +8,8 @@ import { sendMail } from "@/lib/mailer";
 import { hashPassword } from "@/lib/auth/password";
 import { canAssignRole, type PermissionHolder, type RoleCode } from "@/lib/auth/permissions";
 import { revokeAllSessions, sha256, randomToken } from "@/lib/auth/session";
+import { looksLikeClassCode } from "@/lib/class-codes";
+import { INVALID_CLASS_CODE, attachStudentByClassCode, findUsableClassCode } from "./classes";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -126,8 +128,33 @@ async function registerWithGeneralCode(input: { email: string; password: string;
   return { userId, verified, general: true };
 }
 
-export async function registerWithInvitation(input: { code: string; email: string; password: string; firstName: string; lastName: string }) {
+/**
+ * Sinif dəvət kodu ilə şagird qeydiyyatı: sinif kodu serverdə tapılır, şagird həmin sinfə (və onun
+ * tədris ilinə) yerləşdirilir. Kod yanlış/deaktiv/vaxtı keçmiş/limiti dolmuşdursa ümumi xəta qaytarılır.
+ */
+async function registerWithClassCode(input: { code: string; email: string; password: string; firstName: string; lastName: string }) {
+  const passwordHash = await hashPassword(input.password);
+  const verified = autoVerify();
+  const result = await transaction(async (tx) => {
+    const target = await findUsableClassCode(tx, input.code);
+    if (!target) throw Errors.badRequest(INVALID_CLASS_CODE, { code: "Kod etibarsızdır." });
+    const existing = await tx.queryOne("SELECT id FROM users WHERE email = ?", [input.email]);
+    if (existing) throw Errors.conflict("Bu e-poçt ilə hesab artıq mövcuddur.");
+    const res = await tx.execute(
+      `INSERT INTO users (email, first_name, last_name, password_hash, role, is_active, email_verified, email_verified_at, password_changed_at)
+       VALUES (?, ?, ?, ?, 'student', 1, ?, ${verified ? "NOW()" : "NULL"}, NOW())`,
+      [input.email, input.firstName, input.lastName, passwordHash, verified ? 1 : 0]
+    );
+    await attachStudentByClassCode(tx, target, res.insertId, input);
+    return { userId: res.insertId, className: target.className };
+  });
+  if (!verified) await sendVerificationEmail(result.userId, input.email);
+  return { userId: result.userId, verified, general: false, className: result.className };
+}
+
+export async function registerWithInvitation(input: { code: string; email: string; password: string; firstName: string; lastName: string }): Promise<{ userId: number; verified: boolean; general: boolean; className?: string }> {
   if (matchesGeneralInviteCode(input.code)) return registerWithGeneralCode(input);
+  if (looksLikeClassCode(input.code)) return registerWithClassCode(input);
   const passwordHash = await hashPassword(input.password);
   const userId = await transaction(async (tx) => {
     const inv = await findValidInvitation(input.code, tx);

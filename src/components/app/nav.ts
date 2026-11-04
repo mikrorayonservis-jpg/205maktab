@@ -46,8 +46,11 @@ export function buildNav(u: CurrentUser): NavGroup[] {
     if (p("students.manage")) admin.push({ href: "/admin/r/students", label: "Şagirdlər", icon: "graduation" });
     if (p("parents.link")) admin.push({ href: "/admin/parents", label: "Valideyn əlaqələri", icon: "link" });
     if (p("teachers.manage")) admin.push({ href: "/admin/r/teachers", label: "Müəllimlər", icon: "briefcase" });
+    // Sinif idarəsi (dəvət kodları, yerləşdirmə, import) köhnə cədvəl redaktorunu əvəz edir; /admin/r/classes ünvanı işləməyə davam edir
+    const classesPage = p("classes.manage") || p("students.enroll");
+    if (classesPage) admin.push({ href: "/admin/classes", label: "Siniflər və kodlar", icon: "layers" });
     if (p("school.manage")) {
-      admin.push({ href: "/admin/r/classes", label: "Siniflər", icon: "layers" });
+      if (!classesPage) admin.push({ href: "/admin/r/classes", label: "Siniflər", icon: "layers" });
       admin.push({ href: "/admin/r/subjects", label: "Fənlər", icon: "book" });
       admin.push({ href: "/admin/r/assignments", label: "Fənn təyinatları", icon: "link" });
       admin.push({ href: "/admin/r/school-years", label: "Tədris illəri", icon: "calendar" });

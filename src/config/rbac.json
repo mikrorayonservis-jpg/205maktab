@@ -22,6 +22,8 @@
     { "code": "school.manage", "module": "school", "name": "Tədris ili, sinif və fənləri idarə etmək" },
     { "code": "students.view_all", "module": "students", "name": "Bütün şagirdləri görmək" },
     { "code": "students.manage", "module": "students", "name": "Şagird qeydlərini idarə etmək" },
+    { "code": "classes.manage", "module": "school", "name": "Sinif yaratmaq, sinif dəvət kodlarını və sinif rəhbərini idarə etmək" },
+    { "code": "students.enroll", "module": "students", "name": "Şagirdləri siniflərə yerləşdirmək (toplu köçürmə, CSV import)" },
     { "code": "teachers.manage", "module": "teachers", "name": "Müəllim profillərini idarə etmək" },
     { "code": "parents.link", "module": "students", "name": "Valideyn-şagird əlaqələrini idarə etmək" },
     { "code": "schedule.view_all", "module": "schedule", "name": "Bütün cədvəlləri görmək" },
@@ -54,12 +56,13 @@
     "school_admin": ["*"],
     "director": [
       "admin.access", "users.view", "users.manage", "invitations.manage", "students.view_all", "parents.link",
-      "schedule.view_all", "grades.view_all", "attendance.view_all", "homework.view_all", "reports.view",
+      "classes.manage", "students.enroll", "schedule.view_all", "grades.view_all", "attendance.view_all", "homework.view_all", "reports.view",
       "news.submit", "news.edit_any", "news.review", "news.publish", "media.upload",
       "events.manage", "gallery.manage", "documents.manage", "content.manage", "notifications.broadcast", "audit.view"
     ],
     "deputy_director": [
       "admin.access", "users.view", "invitations.manage", "school.manage", "students.view_all", "students.manage", "teachers.manage", "parents.link",
+      "classes.manage", "students.enroll",
       "schedule.view_all", "schedule.manage", "grades.view_all", "attendance.view_all", "attendance.manage_all", "homework.view_all", "reports.view",
       "news.submit", "news.review", "media.upload", "events.manage", "documents.manage", "notifications.broadcast"
     ],

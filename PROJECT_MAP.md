@@ -200,12 +200,15 @@ Verification evidence (02.11.2026, on the Windows machine): `tsc` 0 errors · un
 | Events calendar, gallery (lightbox, videos), documents | 🟡 | Rendering tested only for empty lists |
 | Dashboards (student/parent/teacher/director), reports | 🟡 | `/api/reports/summary` ✅ |
 | Admin CMS (generic CRUD, users, invitations, parents, schedule editor, settings, pages, audit, broadcast) | 🟡 | Access control ✅; UI flows manual only |
+| Class invite codes, class-code registration, bulk placement, CSV import (`/admin/classes`, `src/server/classes.ts`, migration 0009) | ✅ | `tests/integration/08-class-codes.test.mjs`. Code `205-<sinif>-<5 random>` stored in `class_invite_codes` (one current row per class; rotation revokes the old one); audit stores only the last 4 chars. Permissions `classes.manage`, `students.enroll` (director, deputy, school_admin). Single-school platform: there is no `schools` table, so "another school's code" = unknown code |
 | Notifications (in-app) | ✅ | No email/SMS channel; "homework due" reminders generated only when dashboard is opened (no scheduler) |
 | Real content seed, newspaper import | 🟡 | `seed:content` executed ✅; `import:newspaper` not confirmed run |
 | Backup/restore | 🟡 | Not executed |
 | Accessibility / responsive | 🟡 | Built in (labels, focus, skip link, dialogs); manual checklist in `docs/testing/TEST_REPORT.md` not done |
 
 **Missing vs. original specification (not implemented):** email/SMS notifications; 2FA; teacher self-editing of own public profile; admin editing of user name/email (only roles/active status editable); Excel/PDF export (CSV only); bulk actions other than delete; per-page SEO for static pages; monthly/weekly report exports; scheduled jobs (cleanup, reminders); English UI (not required).
+
+**Integration tests without a Postgres install (04.11.2026):** PGlite in a scratch folder works as `DATABASE_URL_TEST` — `npx @electric-sql/pglite-socket` style server (`pglite-server --port=5433 --max-connections=20`, in-memory), then `DATABASE_URL_TEST=postgres://postgres:postgres@127.0.0.1:5433/postgres npm run test:integration`. 52/52 pass this way. Never point it at Supabase.
 
 ## 11. Known bugs, technical debt, risks
 
