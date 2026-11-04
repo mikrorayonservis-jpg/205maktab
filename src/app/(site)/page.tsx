@@ -59,7 +59,7 @@ export default async function HomePage() {
       <section className="border-b border-line bg-surface-warm" aria-labelledby="hero-title">
         <div className="container-page grid items-center gap-10 py-10 md:py-14 lg:grid-cols-[1fr_1.05fr] lg:gap-14 lg:py-16">
           <div>
-            <p className="eyebrow mb-4">Bakı şəhəri, Binəqədi rayonu · {s.founded_year}-cu ildən</p>
+            <p className="eyebrow mb-4">Bakı şəhəri · {s.founded_year}-cu ildən</p>
             <h1 id="hero-title" className="text-[2rem] leading-[1.15] md:text-[2.75rem]">
               Rövşən İmanov adına <span className="text-primary">205 nömrəli</span> tam orta ümumtəhsil məktəbi
             </h1>
@@ -248,7 +248,7 @@ export default async function HomePage() {
             <p className="eyebrow mb-2">Tariximiz</p>
             <h2 id="history-h" className="text-2xl md:text-[1.875rem]">{s.founded_year}-cu ildən bəri təhsil ocağı</h2>
             <p className="mt-4 text-ink-2">
-              Məktəb Binəqədi rayonunda {s.founded_year}-cu ildən fəaliyyət göstərir və Azərbaycanın Milli Qəhrəmanı Rövşən İmanovun adını daşıyır.
+              Məktəb Bakı şəhərində {s.founded_year}-cu ildən fəaliyyət göstərir və Azərbaycanın Milli Qəhrəmanı Rövşən İmanovun adını daşıyır.
               Dövlət proqramı çərçivəsində köhnə bina yenidən tikilmiş, iki korpuslu, dörd mərtəbəli, {s.stat_capacity} şagird yerlik yeni bina
               22 sentyabr 2021-ci ildə istifadəyə verilmişdir.
             </p>

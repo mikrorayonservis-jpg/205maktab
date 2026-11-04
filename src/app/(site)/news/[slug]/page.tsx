@@ -48,7 +48,7 @@ export default async function ArticlePage({ params }: Props) {
           dateModified: String(a.updated_at).replace(" ", "T") + "+04:00",
           image: a.cover_image ? [`${site}${a.cover_image}`] : undefined,
           author: a.byline ? { "@type": "Person", name: a.byline } : undefined,
-          publisher: { "@type": "EducationalOrganization", name: "205 nömrəli tam orta məktəb", logo: { "@type": "ImageObject", url: `${site}/assets/logo/logo-512.webp` } },
+          publisher: { "@type": "EducationalOrganization", name: "205 nömrəli tam orta ümumtəhsil məktəbi", logo: { "@type": "ImageObject", url: `${site}/assets/logo/logo-512.webp` } },
           mainEntityOfPage: `${site}/news/${a.slug}`,
         }}
       />

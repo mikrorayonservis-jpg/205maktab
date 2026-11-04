@@ -8,7 +8,7 @@ loadEnv();
 const PAGES = {
   about: {
     title: "Ümumi məlumat",
-    md: `Binəqədi rayonu Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi **1930-cu ildən** fəaliyyət göstərir. Məktəb Azərbaycanın Milli Qəhrəmanı Rövşən İmanovun adını daşıyır.
+    md: `Bakı şəhəri Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi **1930-cu ildən** fəaliyyət göstərir. Məktəb Azərbaycanın Milli Qəhrəmanı Rövşən İmanovun adını daşıyır.
 
 Məktəb 5 günlük iş rejimi ilə 2 növbədə fəaliyyət göstərir. 2025-2026-cı tədris ilində məktəbdə təhsil alan 1425 şagirdin təlim-tərbiyəsi ilə 79 müəllim məşğul olur.`,
   },

@@ -52,7 +52,7 @@ export async function SiteHeader() {
           <Image src="/assets/logo/logo-128.webp" alt="" width={52} height={52} className="size-12 shrink-0 object-contain md:size-[3.25rem]" priority />
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-[11px] font-medium uppercase tracking-[0.08em] text-ink-3">Rövşən İmanov adına</span>
-            <span className="block truncate font-display text-[15px] font-bold text-ink sm:text-base">205 nömrəli tam orta məktəb</span>
+            <span className="block font-display text-[14px] font-bold leading-tight text-ink sm:text-base">205 nömrəli tam orta ümumtəhsil məktəbi</span>
           </span>
         </Link>
         <MainNav items={NAV} loggedIn={Boolean(user)} />

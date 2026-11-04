@@ -7,7 +7,7 @@
 
 ## 1. Overview & objectives
 
-A **school platform** for *Binəqədi rayonu Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi* (Baku). Not a commercial website. Three systems in one Next.js app, one domain, one auth system, one PostgreSQL (Supabase) database:
+A **school platform** for *Bakı şəhəri Rövşən İmanov adına 205 nömrəli tam orta ümumtəhsil məktəbi* (Baku). Not a commercial website. Three systems in one Next.js app, one domain, one auth system, one PostgreSQL (Supabase) database:
 
 | System | Purpose |
 |---|---|
