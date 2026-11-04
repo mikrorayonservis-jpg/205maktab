@@ -57,11 +57,12 @@ export function Card({ children, className, as: Tag = "div" }: { children: React
   return <Tag className={cn("rounded-lg border border-line bg-surface", className)}>{children}</Tag>;
 }
 
-export function PageHeader({ title, description, actions, eyebrow }: { title: string; description?: ReactNode; actions?: ReactNode; eyebrow?: string }) {
+/** Kabinet səhifəsinin başlığı. `eyebrow` göstərilmir: kabinetdə bölmə adı artıq yan menyuda var
+ *  və başlığın üstündəki kiçik etiket yalnız təkrar idi (prop mövcud çağırışlar üçün saxlanılır). */
+export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode; eyebrow?: string }) {
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        {eyebrow && <p className="eyebrow mb-1">{eyebrow}</p>}
         <h1 className="text-2xl font-semibold text-ink md:text-3xl">{title}</h1>
         {description && <div className="mt-1 text-sm text-ink-3">{description}</div>}
       </div>
@@ -71,12 +72,11 @@ export function PageHeader({ title, description, actions, eyebrow }: { title: st
 }
 
 export function StatCard({ label, value, hint, tone = "primary" }: { label: string; value: ReactNode; hint?: ReactNode; tone?: "primary" | "accent" | "gold" | "danger" }) {
-  const bar = { primary: "bg-primary", accent: "bg-accent", gold: "bg-gold", danger: "bg-danger" }[tone];
+  // Ton yalnız diqqət tələb edən göstəricidə (danger, sıfırdan fərqli) rəqəmin rəngi ilə verilir; dekorativ rəngli zolaq yoxdur.
   return (
-    <div className="relative overflow-hidden rounded-lg border border-line bg-surface p-4">
-      <span className={cn("absolute inset-y-0 left-0 w-1", bar)} aria-hidden="true" />
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-3">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">{value}</p>
+    <div className="rounded-lg border border-line bg-surface p-4">
+      <p className="text-sm text-ink-3">{label}</p>
+      <p className={cn("mt-1 text-3xl font-semibold tabular-nums", tone === "danger" && value !== 0 && value !== "0" ? "text-danger" : "text-ink")}>{value}</p>
       {hint && <p className="mt-0.5 text-xs text-ink-3">{hint}</p>}
     </div>
   );

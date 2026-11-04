@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -27,11 +27,30 @@ export function AppShell({ nav, user, children }: { nav: NavGroup[]; user: { ful
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const menuBtn = useRef<HTMLButtonElement>(null);
+  const closeBtn = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setOpen(false), [path]);
+  // Mobil menyu: açılanda fokus içəri keçir, Esc bağlayır, arxadakı səhifə sürüşmür; bağlananda fokus düyməyə qayıdır.
+  useEffect(() => {
+    if (!open) return;
+    const btn = menuBtn.current;
+    closeBtn.current?.focus();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+      btn?.focus();
+    };
+  }, [open]);
   useEffect(() => {
     let alive = true;
+    // Arxa planda olan tabda sorğu göndərilmir
     const load = () =>
+      !document.hidden &&
       api<{ unread: number }>("/api/notifications?unread=1&limit=1")
         .then((r) => alive && setUnread(r.unread))
         .catch(() => undefined);
@@ -95,14 +114,14 @@ export function AppShell({ nav, user, children }: { nav: NavGroup[]; user: { ful
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menyu">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-hidden="true" />
           <aside className="absolute inset-y-0 left-0 w-[min(18rem,85vw)] bg-surface shadow-xl">
-            <button onClick={() => setOpen(false)} className="absolute right-2 top-3 inline-flex size-9 items-center justify-center rounded-md hover:bg-surface-2" aria-label="Menyunu bağla"><X className="size-5" /></button>
+            <button ref={closeBtn} onClick={() => setOpen(false)} className="absolute right-2 top-3 inline-flex size-9 items-center justify-center rounded-md hover:bg-surface-2" aria-label="Menyunu bağla"><X className="size-5" /></button>
             {sidebar}
           </aside>
         </div>
       )}
       <div className="min-w-0">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur md:px-6">
-          <button onClick={() => setOpen(true)} className="inline-flex size-9 items-center justify-center rounded-md hover:bg-surface-2 lg:hidden" aria-label="Menyunu aç" aria-expanded={open}><Menu className="size-5" /></button>
+          <button ref={menuBtn} onClick={() => setOpen(true)} className="inline-flex size-9 items-center justify-center rounded-md hover:bg-surface-2 lg:hidden" aria-label="Menyunu aç" aria-expanded={open}><Menu className="size-5" /></button>
           <div className="ml-auto flex items-center gap-1">
             <Link href="/notifications" className="relative inline-flex size-9 items-center justify-center rounded-md text-ink-2 hover:bg-surface-2" aria-label={`Bildirişlər${unread ? ` (${unread} oxunmamış)` : ""}`}>
               <Bell className="size-[18px]" />

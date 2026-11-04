@@ -44,7 +44,7 @@ export function ParentsClient() {
           ) : <EmptyState title="Bağlı valideyn yoxdur" />}
           <div className="mt-5 flex flex-wrap items-end gap-3 border-t border-line pt-5">
             {error && <Alert tone="danger" className="w-full">{error}</Alert>}
-            <FormField id="ps-e" label="Mövcud valideyn hesabının e-poçtu" error={fields.email} className="min-w-72 flex-1"><Input id="ps-e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></FormField>
+            <FormField id="ps-e" label="Mövcud valideyn hesabının e-poçtu" error={fields.email} className="w-full flex-1 sm:w-auto sm:min-w-72"><Input id="ps-e" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></FormField>
             <Button onClick={link} loading={loading}>Bağla</Button>
           </div>
         </Card>

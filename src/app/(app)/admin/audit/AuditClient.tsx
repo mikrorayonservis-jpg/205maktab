@@ -26,10 +26,10 @@ export function AuditClient() {
   return (
     <div className="space-y-4">
       <form onSubmit={(e) => { e.preventDefault(); setPage(1); setApplied(f); }} className="flex flex-wrap items-end gap-3">
-        <Select aria-label="Əməliyyat növü" value={f.action} onChange={(e) => setF({ ...f, action: e.target.value })} className="w-52">{PREFIXES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</Select>
-        <Input aria-label="İstifadəçinin e-poçtu" placeholder="İstifadəçinin e-poçtu" value={f.userEmail} onChange={(e) => setF({ ...f, userEmail: e.target.value })} className="w-60" />
-        <Input aria-label="Başlanğıc tarix" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} className="w-40" />
-        <Input aria-label="Son tarix" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} className="w-40" />
+        <Select aria-label="Əməliyyat növü" value={f.action} onChange={(e) => setF({ ...f, action: e.target.value })} className="w-full sm:w-52">{PREFIXES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</Select>
+        <Input aria-label="İstifadəçinin e-poçtu" placeholder="İstifadəçinin e-poçtu" value={f.userEmail} onChange={(e) => setF({ ...f, userEmail: e.target.value })} className="w-full sm:w-60" />
+        <Input aria-label="Başlanğıc tarix" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} className="min-w-0 flex-1 sm:w-40 sm:flex-none" />
+        <Input aria-label="Son tarix" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} className="min-w-0 flex-1 sm:w-40 sm:flex-none" />
         <Button type="submit" variant="secondary">Filtrlə</Button>
         <a href={`/api/admin/audit?${qs({ format: "csv", page: "" })}`} className="ml-auto inline-flex h-10 items-center gap-2 rounded-md border border-line-strong px-3 text-sm hover:bg-surface-2"><Download className="size-4" aria-hidden="true" /> CSV ixrac</a>
       </form>

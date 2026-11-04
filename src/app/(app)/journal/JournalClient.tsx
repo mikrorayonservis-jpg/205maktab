@@ -72,7 +72,7 @@ export function JournalClient({ initialClass, initialSubject, canBrowseAll }: { 
     <div className="space-y-5">
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-line bg-surface p-4">
         {pairOptions.length > 0 && (
-          <FormField id="pair" label="Sinif və fənn" className="min-w-64">
+          <FormField id="pair" label="Sinif və fənn" className="w-full sm:w-auto sm:min-w-64">
             <Select id="pair" value={classId && subjectId ? `${classId}:${subjectId}` : ""} onChange={(e) => { const [c, s] = e.target.value.split(":").map(Number); setClassId(c || null); setSubjectId(s || null); }}>
               <option value="">Seçin…</option>
               {pairOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}

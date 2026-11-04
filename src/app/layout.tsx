@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import { Inter, Manrope } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { getSettings } from "@/server/settings";
@@ -35,12 +34,11 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="az" suppressHydrationWarning className={`${body.variable} ${heading.variable}`}>
       <body className="min-h-screen bg-bg text-ink">
         <a href="#main" className="skip-link">Əsas məzmuna keç</a>
-        <Providers nonce={nonce}>{children}</Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

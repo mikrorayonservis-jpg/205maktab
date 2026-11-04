@@ -44,14 +44,14 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const teacherId = Number(sp.teacher) || (!classId && !subjectId ? u.teacherId ?? undefined : undefined);
   const lessons = classId || teacherId || subjectId ? await lessonsFor({ classId, teacherId, subjectId }) : [];
   const title = classId ? `${classes.find((c) => c.id === classId)?.name ?? ""} sinfi` : teacherId ? teachers.find((t) => t.id === teacherId)?.name : subjectId ? subjects.find((s) => s.id === subjectId)?.name : "Seçim edin";
-  const sel = "h-10 rounded-md border border-line-strong bg-surface px-3 text-sm";
+  const sel = "h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm sm:w-auto sm:min-w-40";
   return (
     <div className="space-y-5">
       <PageHeader title="Dərs cədvəli" description={`${title ?? ""} · ${year.name}`} />
-      <form className="flex flex-wrap items-end gap-3 rounded-lg border border-line bg-surface p-4" aria-label="Cədvəl filtri">
-        <label className="text-sm"><span className="mb-1 block font-medium">Sinif</span><select name="class" defaultValue={classId ?? ""} className={sel}><option value="">—</option>{classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-        <label className="text-sm"><span className="mb-1 block font-medium">Müəllim</span><select name="teacher" defaultValue={sp.teacher ?? ""} className={sel}><option value="">—</option>{teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
-        <label className="text-sm"><span className="mb-1 block font-medium">Fənn</span><select name="subject" defaultValue={subjectId ?? ""} className={sel}><option value="">—</option>{subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+      <form className="grid grid-cols-2 items-end gap-3 rounded-lg border border-line bg-surface p-4 sm:flex sm:flex-wrap" aria-label="Cədvəl filtri">
+        <label className="min-w-0 text-sm"><span className="mb-1 block font-medium">Sinif</span><select name="class" defaultValue={classId ?? ""} className={sel}><option value="">—</option>{classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+        <label className="min-w-0 text-sm"><span className="mb-1 block font-medium">Müəllim</span><select name="teacher" defaultValue={sp.teacher ?? ""} className={sel}><option value="">—</option>{teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
+        <label className="min-w-0 text-sm"><span className="mb-1 block font-medium">Fənn</span><select name="subject" defaultValue={subjectId ?? ""} className={sel}><option value="">—</option>{subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
         <button className="h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-ink">Göstər</button>
       </form>
       <WeekGrid lessons={lessons} mode={classId ? "class" : "teacher"} />

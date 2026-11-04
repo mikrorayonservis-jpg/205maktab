@@ -54,8 +54,8 @@ export function GalleryMedia({ id }: { id: number }) {
         <h2 className="mb-4 text-lg font-semibold">Videolar (YouTube / Vimeo)</h2>
         <div className="flex flex-wrap items-end gap-3">
           {error && <Alert tone="danger" className="w-full">{error}</Alert>}
-          <FormField id="v-url" label="Video keçidi" error={fields.url} className="min-w-72 flex-1"><Input id="v-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." /></FormField>
-          <FormField id="v-title" label="Başlıq" className="min-w-56"><Input id="v-title" value={title} onChange={(e) => setTitle(e.target.value)} /></FormField>
+          <FormField id="v-url" label="Video keçidi" error={fields.url} className="w-full flex-1 sm:w-auto sm:min-w-72"><Input id="v-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." /></FormField>
+          <FormField id="v-title" label="Başlıq" className="w-full sm:w-auto sm:min-w-56"><Input id="v-title" value={title} onChange={(e) => setTitle(e.target.value)} /></FormField>
           <Button onClick={addVideo} loading={loading}>Əlavə et</Button>
         </div>
         <ul className="mt-4 divide-y divide-line">

@@ -9,8 +9,9 @@ export const GET = route(async ({ req }) => {
     z.object({
       category: z.string().regex(/^[a-z0-9-]{1,190}$/).optional(),
       q: z.string().trim().max(100).optional(),
+      year: z.coerce.number().int().min(2000).max(2100).optional(),
       page: z.coerce.number().int().min(1).max(1000).default(1),
     })
   );
-  return ok(await publishedNews({ category: q.category, q: q.q, page: q.page }));
+  return ok(await publishedNews({ category: q.category, q: q.q, year: q.year, page: q.page }));
 });
