@@ -1,6 +1,6 @@
 "use client";
 import { checkPassword, passwordHint, passwordInputProps } from "@/lib/password-policy";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/client/api";
 import { useSubmit } from "@/lib/client/useSubmit";
@@ -11,6 +11,12 @@ import { Alert } from "@/components/ui/Feedback";
 export default function RegisterPage() {
   const { loading, error, fields, run, invalid } = useSubmit();
   const [done, setDone] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  // Sinifin qoşulma keçidi (/register?code=205-10B-XXXXX) kodu avtomatik doldurur
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get("code");
+    if (c) setCode(c.slice(0, 40));
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,8 +46,8 @@ export default function RegisterPage() {
       </p>
       <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
         {error && <Alert tone="danger">{error}</Alert>}
-        <FormField id="code" label="Dəvət kodu" error={fields.code} hint="Məktəbin verdiyi kod (məsələn: ABCD-EFGH-JKLM)" required>
-          <Input id="code" name="code" autoComplete="off" required className="font-mono uppercase tracking-wider" aria-invalid={Boolean(fields.code)} />
+        <FormField id="code" label="Dəvət kodu" error={fields.code} hint="Şagirdlər üçün sinif kodu (məs. 205-10B-K7M4P) və ya fərdi dəvət kodu (ABCD-EFGH-JKLM)" required>
+          <Input id="code" name="code" value={code} onChange={(e) => setCode(e.target.value)} autoComplete="off" required className="font-mono uppercase tracking-wider" aria-invalid={Boolean(fields.code)} />
         </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField id="firstName" label="Ad" error={fields.firstName} required>
