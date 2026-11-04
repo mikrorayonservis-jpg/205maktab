@@ -34,7 +34,7 @@ export default async function ContactPage() {
           {rows.map(({ Icon, label, value, href }) => (
             <li key={label} className="flex gap-4 rounded-lg border border-line bg-surface p-5">
               <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-              <div>
+              <div className="min-w-0 break-words">
                 <p className="text-xs uppercase tracking-wide text-ink-3">{label}</p>
                 {href ? <a href={href} className="font-medium hover:text-primary">{value}</a> : <p className="font-medium">{value}</p>}
               </div>

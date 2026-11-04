@@ -29,8 +29,8 @@ export function UsersClient({ roles }: { roles: { code: string; name: string }[]
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
-        <form onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(q); }}><label className="sr-only" htmlFor="uq">Axtar</label><Input id="uq" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ad, soyad və ya e-poçt…" className="w-72" /></form>
-        <Select aria-label="Rol" value={role} onChange={(e) => { setPage(1); setRole(e.target.value); }} className="w-56"><option value="">Bütün rollar</option>{roles.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}</Select>
+        <form onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(q); }} className="w-full sm:w-auto"><label className="sr-only" htmlFor="uq">Axtar</label><Input id="uq" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ad, soyad və ya e-poçt…" className="w-full sm:w-72" /></form>
+        <Select aria-label="Rol" value={role} onChange={(e) => { setPage(1); setRole(e.target.value); }} className="w-full sm:w-56"><option value="">Bütün rollar</option>{roles.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}</Select>
       </div>
       {!rows ? <Skeleton className="h-72" /> : rows.length ? (
         <div className="overflow-x-auto rounded-lg border border-line bg-surface">

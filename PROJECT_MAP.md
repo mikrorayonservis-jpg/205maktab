@@ -24,7 +24,7 @@ UI language: **Azerbaijani only** (dates DD.MM.YYYY, 24h, Asia/Baku). Real schoo
 | Layer | Technology |
 |---|---|
 | Framework | Next.js **15.5.28** App Router, React 19.0.0, TypeScript 5 (strict) |
-| Styling | Tailwind CSS 4 (`@tailwindcss/postcss`), CSS variables in `src/app/globals.css`, light/dark via `next-themes` (class) |
+| Styling | Tailwind CSS 4 (`@tailwindcss/postcss`), CSS variables in `src/app/globals.css`, light/dark via `next-themes` (class), scoped per route group by `src/components/ThemeScope.tsx` (keys in `src/lib/theme-keys.ts` — must stay outside the `"use client"` module because server layouts call them): public site + auth use key `205_public_theme`, `(app)` uses `205_dashboard_theme:<userId>` (no root ThemeProvider — nested next-themes providers are ignored) |
 | Icons | `lucide-react` |
 | DB | **PostgreSQL on Supabase** (since 03.11.2026; before: MySQL 8.4), driver `pg`, raw parameterized SQL (no ORM). `?` placeholders converted to `$n` in `src/lib/db.ts` / `src/lib/sql-params.ts` |
 | Files | Supabase Storage private bucket `school-files` (`@supabase/supabase-js`, server-only secret key); local `STORAGE_DIR` fallback in dev |

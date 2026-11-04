@@ -11,6 +11,7 @@ import { AppError, Errors } from "@/lib/http";
 import { can } from "@/lib/auth/permissions";
 import type { CurrentUser } from "@/lib/auth/session";
 import { slugify } from "@/lib/slug";
+import { likePattern, searchTerms, sqlFold } from "@/lib/search";
 import { z, optionalId, optionalText, shortText } from "@/lib/validation";
 import { notifyRoles, notifyUsers } from "./notifications";
 
@@ -314,11 +315,17 @@ const PUBLIC_COLS = `n.id, n.title_az AS title, n.slug, n.summary_az AS summary,
                      c.name_az AS category_name, c.slug AS category_slug, n.is_featured`;
 const PUBLIC_WHERE = "n.status = 'published' AND n.deleted_at IS NULL AND n.published_at <= NOW() AND (n.contains_minors = 0 OR n.consent_confirmed = 1)";
 
+const SEARCH_FIELDS = ["n.title_az", "n.summary_az", "n.content_az", "c.name_az"];
+
 export async function publishedNews(opts: { category?: string; q?: string; page?: number; pageSize?: number; excludeId?: number; year?: number } = {}) {
   const where = [PUBLIC_WHERE];
   const params: unknown[] = [];
   if (opts.category) { where.push("c.slug = ?"); params.push(opts.category); }
-  if (opts.q) { where.push("(n.title_az ILIKE ? OR n.summary_az ILIKE ?)"); const like = `%${opts.q.replace(/[%_]/g, "\\$&")}%`; params.push(like, like); }
+  // Hər söz başlıq, xülasə, mətn və ya kateqoriya adında olmalıdır (sözlər arasında AND).
+  for (const term of searchTerms(opts.q)) {
+    where.push(`(${SEARCH_FIELDS.map((f) => `${sqlFold(f)} LIKE ?`).join(" OR ")})`);
+    params.push(...SEARCH_FIELDS.map(() => likePattern(term)));
+  }
   if (opts.excludeId) { where.push("n.id <> ?"); params.push(opts.excludeId); }
   if (opts.year) { where.push("EXTRACT(YEAR FROM n.published_at AT TIME ZONE 'Asia/Baku')::int = ?"); params.push(opts.year); }
   const pageSize = opts.pageSize ?? 12;
@@ -346,6 +353,14 @@ export const publishedArticle = cache(async (slug: string) => {
 export async function incrementViews(id: number) {
   await db.execute("UPDATE news SET views = views + 1 WHERE id = ?", [id]);
 }
+
+/** Dərc edilmiş xəbərlərin olduğu illər (axtarışda tarix filtri üçün). */
+export const publishedNewsYears = cache(async () => {
+  const rows = await db.query<{ y: number }>(
+    `SELECT DISTINCT EXTRACT(YEAR FROM n.published_at AT TIME ZONE 'Asia/Baku')::int AS y FROM news n WHERE ${PUBLIC_WHERE} ORDER BY y DESC`
+  );
+  return rows.map((r) => Number(r.y));
+});
 
 export const newsCategories = cache(async () => {
   return db.query<{ id: number; name_az: string; slug: string }>("SELECT id, name_az, slug FROM news_categories ORDER BY name_az");

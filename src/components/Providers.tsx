@@ -1,12 +1,8 @@
 "use client";
-import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { ToastProvider } from "./ui/Toast";
 
-export function Providers({ children, nonce }: { children: ReactNode; nonce?: string }) {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange nonce={nonce}>
-      <ToastProvider>{children}</ToastProvider>
-    </ThemeProvider>
-  );
+// Mövzu provayderi burada deyil: hər route qrupu öz ThemeScope-unu qurur (bax ThemeScope.tsx).
+export function Providers({ children }: { children: ReactNode }) {
+  return <ToastProvider>{children}</ToastProvider>;
 }

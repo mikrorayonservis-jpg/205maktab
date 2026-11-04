@@ -105,9 +105,9 @@ export function ResourceManager({ resourceKey }: { resourceKey: string }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         {def.search.length > 0 && (
-          <form onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(q); }} className="relative" role="search">
+          <form onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(q); }} className="relative w-full sm:w-auto" role="search">
             <label htmlFor="rm-q" className="sr-only">Axtar</label>
-            <Input id="rm-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Axtar…" className="w-64 pl-9" />
+            <Input id="rm-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Axtar…" className="w-full pl-9 sm:w-64" />
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
           </form>
         )}
@@ -116,7 +116,7 @@ export function ResourceManager({ resourceKey }: { resourceKey: string }) {
           if (!f) return null;
           const list = f.options ?? opts[f.source ?? ""] ?? [];
           return (
-            <Select key={fname} aria-label={f.label} value={filters[fname] || ""} onChange={(e) => { setPage(1); setFilters((x) => ({ ...x, [fname]: e.target.value })); }} className="w-52">
+            <Select key={fname} aria-label={f.label} value={filters[fname] || ""} onChange={(e) => { setPage(1); setFilters((x) => ({ ...x, [fname]: e.target.value })); }} className="w-full sm:w-52">
               <option value="">{f.label}: hamısı</option>
               {list.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </Select>
@@ -160,7 +160,7 @@ export function ResourceManager({ resourceKey }: { resourceKey: string }) {
         <EmptyState title="Qeyd tapılmadı" action={<Button size="sm" onClick={() => setEditing("new")}><Plus className="size-4" aria-hidden="true" /> Əlavə et</Button>} />
       ))}
       {pages > 1 && (
-        <div className="flex items-center justify-between text-sm text-ink-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-ink-3">
           <span>Cəmi {total} qeyd</span>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Əvvəlki</Button>
