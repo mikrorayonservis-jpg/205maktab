@@ -1,6 +1,7 @@
 /** Hesab əməliyyatları: dəvət kodları, qeydiyyat, e-poçt təsdiqi, parol bərpası. */
 import "server-only";
 import crypto from "node:crypto";
+import { after } from "next/server";
 import { db, transaction, type Db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { Errors } from "@/lib/http";
@@ -124,7 +125,7 @@ async function registerWithGeneralCode(input: { email: string; password: string;
     );
     return res.insertId;
   });
-  if (!verified) await sendVerificationEmail(userId, input.email);
+  if (!verified) queueVerificationEmail(userId, input.email);
   return { userId, verified, general: true };
 }
 
@@ -148,7 +149,7 @@ async function registerWithClassCode(input: { code: string; email: string; passw
     await attachStudentByClassCode(tx, target, res.insertId, input);
     return { userId: res.insertId, className: target.className };
   });
-  if (!verified) await sendVerificationEmail(result.userId, input.email);
+  if (!verified) queueVerificationEmail(result.userId, input.email);
   return { userId: result.userId, verified, general: false, className: result.className };
 }
 
@@ -177,7 +178,7 @@ export async function registerWithInvitation(input: { code: string; email: strin
     );
     return res.insertId;
   });
-  await sendVerificationEmail(userId, input.email);
+  queueVerificationEmail(userId, input.email);
   return { userId, verified: false, general: false };
 }
 
@@ -191,6 +192,14 @@ export async function redeemInvitation(user: { id: number; email: string; firstN
     await tx.execute("UPDATE invitations SET used_at = NOW(), used_by = ? WHERE id = ?", [user.id, inv.id]);
     await tx.execute("INSERT INTO audit_logs (user_id, action, entity_type, entity_id) VALUES (?, 'invitation.redeem', 'invitation', ?)", [user.id, inv.id]);
   });
+}
+
+/**
+ * Qeydiyyat cavabı SMTP-ni gözləmir: hesab yaradılan kimi cavab qayıdır, məktub cavabdan sonra göndərilir
+ * (Next `after`, Vercel-də waitUntil). Əvvəl yavaş/əlçatmaz SMTP telefonda qeydiyyatı "donmuş" kimi saxlayırdı.
+ */
+function queueVerificationEmail(userId: number, email: string) {
+  after(() => sendVerificationEmail(userId, email).catch((e) => console.error("[mail] təsdiq məktubu:", e instanceof Error ? e.message : e)));
 }
 
 export async function sendVerificationEmail(userId: number, email: string) {

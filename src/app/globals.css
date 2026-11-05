@@ -36,7 +36,9 @@
   --navy: #1c4597;
   --navy-hover: #163777;
   --navy-ink: #ffffff;
-  --auth-bg: linear-gradient(180deg, #e6effb 0%, #f3f7fd 46%, #fbfaf7 100%);
+  /* Giriş/qeydiyyat: ağa yaxın, yüngül boz fon; yuxarıda yumşaq işıq (emblemin arxası) */
+  --auth-bg: radial-gradient(120% 60% at 50% -8%, #ffffff 0%, rgb(255 255 255 / 0) 60%), linear-gradient(180deg, #eef1f5 0%, #f4f6f9 50%, #f7f8fa 100%);
+  --auth-field-line: #dde2ea;
   --shadow: 0 1px 2px rgb(23 43 69 / 0.05);
   --shadow-lift: 0 10px 30px -14px rgb(23 43 69 / 0.22), 0 1px 3px rgb(23 43 69 / 0.06);
   --display: var(--font-heading-face, "Segoe UI"), "Segoe UI", system-ui, sans-serif;
@@ -73,7 +75,8 @@
   --navy: #3a6fc4;
   --navy-hover: #4a7dd0;
   --navy-ink: #ffffff;
-  --auth-bg: linear-gradient(180deg, #111b2b 0%, #0e1622 55%, #0c121c 100%);
+  --auth-bg: radial-gradient(120% 60% at 50% -8%, rgb(141 177 234 / 0.10) 0%, rgb(141 177 234 / 0) 60%), linear-gradient(180deg, #0f1724 0%, #0d141f 55%, #0c121c 100%);
+  --auth-field-line: #2a3850;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-lift: 0 18px 40px -18px rgb(0 0 0 / 0.7);
   color-scheme: dark;

@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { useSubmit } from "@/lib/client/useSubmit";
+import { useHydrated } from "@/lib/client/useHydrated";
 import { Alert } from "@/components/ui/Feedback";
-import { AuthField, AuthSubmit } from "@/components/auth/AuthField";
+import { AuthDivider, AuthField, AuthSubmit, authSecondaryClass } from "@/components/auth/AuthField";
 import { AuthTitle } from "@/components/auth/AuthSplit";
 import { AuthLoading } from "@/components/auth/AuthLoading";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,17 @@ export function LoginForm({ next }: { next: string }) {
   const [resent, setResent] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [shake, setShake] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const alertRef = useRef<HTMLDivElement>(null);
+  const ready = useHydrated();
   const { loading, error, fields, run } = useSubmit();
+
+  // Uğursuz cəhddən sonra xəbərdarlıq görünən yerə gəlir (telefonda klaviatura açıq olanda forma ekrandan uzundur)
+  useEffect(() => {
+    if (!attempt || !alertRef.current) return;
+    alertRef.current.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    alertRef.current.focus({ preventScroll: true });
+  }, [attempt]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,7 +36,7 @@ export function LoginForm({ next }: { next: string }) {
     setUnverified(null);
     const ok = await run(async () => {
       try {
-        await api("/api/auth/login", { body: { email, password: String(fd.get("password") || "") } });
+        await api("/api/auth/login", { body: { email, password: String(fd.get("password") || "") }, signal: AbortSignal.timeout(25_000) });
         return true;
       } catch (err) {
         if ((err as { code?: string }).code === "EMAIL_NOT_VERIFIED") setUnverified(email);
@@ -38,6 +49,7 @@ export function LoginForm({ next }: { next: string }) {
       window.location.assign(next);
     } else {
       setShake(true);
+      setAttempt((n) => n + 1);
     }
   }
 
@@ -52,30 +64,34 @@ export function LoginForm({ next }: { next: string }) {
       <div className="login-stagger">
         <AuthTitle title="Giriş" subtitle="Qiymətlər, dərs cədvəli və ev tapşırıqları sizi gözləyir" />
 
-        <form onSubmit={onSubmit} noValidate className={cn("mt-7 space-y-4", shake && "login-shake")} onAnimationEnd={() => setShake(false)}>
-          {error && <Alert tone="danger">{error}</Alert>}
-          {unverified && (
-            <Alert tone="info">
-              {resent ? "Yeni təsdiq keçidi göndərildi." : <button type="button" onClick={resend} className="font-medium text-primary underline">Təsdiq keçidini yenidən göndər</button>}
-            </Alert>
+        <form method="post" onSubmit={onSubmit} noValidate className={cn("mt-7 space-y-4", shake && "login-shake")} onAnimationEnd={() => setShake(false)}>
+          {(error || unverified) && (
+            <div ref={alertRef} tabIndex={-1} className="space-y-3 focus:outline-none">
+              {error && <Alert tone="danger">{error}</Alert>}
+              {unverified && (
+                <Alert tone="info">
+                  {resent ? "Yeni təsdiq keçidi göndərildi." : <button type="button" onClick={resend} className="font-medium text-primary underline">Təsdiq keçidini yenidən göndər</button>}
+                </Alert>
+              )}
+            </div>
           )}
-          <AuthField id="email" name="email" type="email" label="E-poçt" placeholder="ad@numune.az" autoComplete="username" inputMode="email" required error={fields.email} />
+          <AuthField id="email" name="email" type="email" label="E-poçt" icon={Mail} placeholder="ad@numune.az" autoComplete="username" inputMode="email" required error={fields.email} />
           <div>
-            <AuthField id="password" name="password" type="password" label="Parol" autoComplete="current-password" required error={fields.password} />
+            <AuthField id="password" name="password" type="password" label="Parol" icon={Lock} placeholder="Parolunuz" autoComplete="current-password" required error={fields.password} />
             <div className="mt-2 flex justify-end">
               <Link href="/forgot-password" className="rounded text-sm font-medium text-primary hover:underline">Parolu unutmusunuz?</Link>
             </div>
           </div>
-          <AuthSubmit disabled={loading || leaving}>
+          <AuthSubmit disabled={!ready || loading || leaving}>
             Daxil ol
             <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" aria-hidden="true" />
           </AuthSubmit>
         </form>
 
-        <p className="mt-6 border-t border-line pt-5 text-center text-sm text-ink-3">
-          Hesabınız yoxdur?{" "}
-          <Link href="/register" className="font-semibold text-primary hover:underline">Dəvət kodu ilə qeydiyyat</Link>
-        </p>
+        <div className="mt-6 space-y-4">
+          <AuthDivider>Hesabınız yoxdur?</AuthDivider>
+          <Link href="/register" className={authSecondaryClass}>Dəvət kodu ilə qeydiyyat</Link>
+        </div>
       </div>
       {(loading || leaving) && <AuthLoading title="Daxil olunur" subtitle={leaving ? "Kabinetiniz hazırlanır" : "Məlumatlar yoxlanılır"} />}
     </>

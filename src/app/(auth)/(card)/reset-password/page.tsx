@@ -25,7 +25,7 @@ function ResetForm() {
   if (!token) return <Alert tone="danger">Keçid natamamdır. E-poçtdakı keçidi tam açın.</Alert>;
   if (msg) return <><Alert tone="success">{msg}</Alert><Link href="/login" className="mt-4 inline-block text-primary hover:underline">Girişə keç</Link></>;
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form method="post" onSubmit={onSubmit} className="space-y-4" noValidate>
       {error && <Alert tone="danger">{error}</Alert>}
       <FormField id="password" label="Yeni parol" error={fields.password} hint={passwordHint()} required>
         <Input id="password" name="password" type="password" autoComplete="new-password" required {...passwordInputProps()} />
