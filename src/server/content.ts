@@ -2,6 +2,7 @@
 import "server-only";
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { likePattern, searchTerms, sqlFold } from "@/lib/search";
 
 export const DOCUMENT_CATEGORIES: Record<string, string> = {
   nizamname: "Məktəbin nizamnaməsi",
@@ -118,10 +119,16 @@ export const publicEvent = cache(async (slug: string) => {
 
 const GALLERY_WHERE = "g.is_published = 1 AND g.deleted_at IS NULL AND (g.contains_minors = 0 OR g.consent_confirmed = 1)";
 
-export async function publicGalleries(opts: { category?: string; year?: number; page?: number; pageSize?: number } = {}) {
+export async function publicGalleries(opts: { category?: string; year?: number; q?: string; page?: number; pageSize?: number } = {}) {
   const where = [GALLERY_WHERE];
   const params: unknown[] = [];
   if (opts.category) { where.push("g.category_az = ?"); params.push(opts.category); }
+  // Albom axtarışı: hər söz başlıqda, təsvirdə və ya kateqoriyada olmalıdır (xəbər axtarışı ilə eyni qatlama)
+  for (const term of searchTerms(opts.q)) {
+    const fields = ["g.title_az", "g.description_az", "g.category_az"];
+    where.push(`(${fields.map((f) => `${sqlFold(f)} LIKE ?`).join(" OR ")})`);
+    params.push(...fields.map(() => likePattern(term)));
+  }
   if (opts.year) { where.push("EXTRACT(YEAR FROM g.event_date)::int = ?"); params.push(opts.year); }
   const pageSize = opts.pageSize ?? 12;
   const page = opts.page ?? 1;

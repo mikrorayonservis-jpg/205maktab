@@ -264,6 +264,15 @@ Not inspectable from this session: live database contents (users, existing rows)
 - Student import accepts `.xlsx` (first sheet, converted to CSV in the browser by `src/lib/client/xlsx-to-csv.ts`; the server validates the CSV exactly as before).
 - Tooling: `npm run dev:local` (in-memory PGlite Postgres on 127.0.0.1:5433 + migrations + demo school + test admin with a hidden password prompt + class 10B code + `next dev`; never touches Supabase), `npm run verify:local` (typecheck, unit, build, integration against PGlite; log in `test-results/verify-local.txt`), `npm run diagnose:admin -- <emails>` (read-only live DB check: migrations, permissions, identity sequences, RLS, storage bucket, recent creates).
 
+### Public site redesign (05.11.2026, branch `redesign/site-ui`)
+
+- Palette in `globals.css` (light): navy `#092B63` / deep `#061E46` (tokens `--band`, `--band-deep` for dark surfaces that stay dark in both themes; `--navy` = brand button), royal `#1052C9` (`--primary`, interactions only), `#EAF1FF` soft, `#F7F9FD` page bg, gold `#F4BD38` (accents only; `--gold-ink` for gold text on light), ink `#14213D`/`#63718A`, lines `#E3EAF4`. Dark palette redefined to match. Type scale classes `.t-display`, `.t-page`, `.t-section`, `.t-card`; layout `.container-page` (78rem), `.section`, `.sheet` (rounded content sheet over a hero); `.card`, `.card-link`, `.chip`, `.hero-veil`.
+- Shared site components (`src/components/site/parts.tsx`): `PageHero` (real building photo + navy veil), `PageIntro` (light), `Breadcrumbs`, `SectionHeading`, `NewsCard` (default/lead/compact; horizontal on 360–639px), `EventCard`, `GalleryCard`, `DateBadge`, `Portrait`, `ImagePlaceholder` (logo, never a stock photo), `ChipRow`/`ChipLink`. `NewsSearch.tsx` exports generic `UrlSearch` (used by news and gallery). `BackToTop.tsx`. `GalleryGrid` lightbox: keyboard, swipe, preloading, loading state, feature layout.
+- Header = info strip (`--band-deep`, not sticky) + sticky main bar; desktop nav from `lg` (school name text hidden 1024–1279px), mobile drawer (portal, focus trap, Esc, scroll lock, closes on navigation). Search icon on phones links to `/news#axtaris`.
+- Gallery search: `publicGalleries({ q })` in `src/server/content.ts` (same Azerbaijani folding as news search; title/description/category).
+- Dashboards: only tokens + small `AppShell` nav polish; layouts unchanged.
+- Local visual testing without Supabase: `npm run dev:local`, then `node test-results/redesign-local-fixtures.mjs` (gitignored; loads the real newspaper articles/photos into the in-memory DB and publishes them locally only).
+
 ## 12. Recommended roadmap
 
 1. **Stabilize environment:** move project out of OneDrive, `git init` + first commit (exclude `.env`, `storage`, `_backup`), review `npm audit`.

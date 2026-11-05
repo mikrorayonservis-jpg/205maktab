@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Award, ExternalLink } from "lucide-react";
 import { getSettings } from "@/server/settings";
 import { achievements } from "@/server/content";
-import { PageIntro } from "@/components/site/parts";
+import { Breadcrumbs, SectionHeading } from "@/components/site/parts";
 
 export const metadata: Metadata = {
   title: "Nailiyyətlər",
@@ -23,73 +23,85 @@ const OFFICIAL_LISTS = [
 
 export default async function AchievementsPage() {
   const [s, wins] = await Promise.all([getSettings(), achievements(100)]);
+  const awards = [
+    { id: "qrant", title: "“Təhsildə inkişaf və innovasiyalar üzrə Qrant müsabiqəsi”nin qalibi", year: null as string | null, desc: null as string | null, image: null as string | null },
+    { id: "sayt", title: "Məktəbin rəsmi saytı “Ən yaxşı məktəb saytı” müsabiqəsinin qalibi", year: "2021-2022-ci tədris ili", desc: null, image: null },
+    ...wins.map((w) => ({ id: String(w.id), title: w.title_az, year: w.year_label, desc: w.description_az, image: w.image_url })),
+  ];
   return (
     <>
-      <PageIntro eyebrow="Fəxrimiz" title="Nailiyyətlər" crumbs={[{ href: "/about", label: "Haqqımızda" }, { label: "Nailiyyətlər" }]}>
-        Şagird və müəllimlərimizin uğurları, buraxılış imtahanlarının nəticələri və məktəbin qazandığı müsabiqələr.
-      </PageIntro>
-      <div className="container-page space-y-14 py-12">
-        <section aria-labelledby="results-h">
-          <h2 id="results-h" className="mb-5 text-2xl">{s.result_year}-ci tədris ilinin buraxılış nəticələri</h2>
-          <dl className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-3">
-            {[
-              [s.result_graduates, "XI sinfi bitirən məzun"],
-              [s.result_admitted, "ali təhsil müəssisəsinə qəbul olub"],
-              [s.result_600, "məzun 600-dən yuxarı bal toplayıb"],
-            ].map(([v, l]) => (
-              <div key={l} className="flex flex-col-reverse bg-surface p-6">
-                <dd className="font-display text-4xl font-extrabold text-primary">{v}</dd>
-                <dt className="mb-2 text-sm text-ink-3">{l}</dt>
-              </div>
-            ))}
-          </dl>
-        </section>
+      {/* Başlıq + buraxılış nəticələri bir tünd blokda */}
+      <section className="bg-band text-band-ink" aria-labelledby="page-title">
+        <div className="container-page pb-14 pt-7 md:pb-20 md:pt-10">
+          <Breadcrumbs tone="dark" items={[{ href: "/", label: "Ana səhifə" }, { href: "/about", label: "Haqqımızda" }, { label: "Nailiyyətlər" }]} />
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-end lg:gap-16">
+            <div>
+              <h1 id="page-title" className="t-page">Nailiyyətlər</h1>
+              <div className="rule-gold mt-4" aria-hidden="true" />
+              <p className="mt-5 max-w-lg text-lg leading-relaxed text-band-muted">
+                Şagird və müəllimlərimizin uğurları, buraxılış imtahanlarının nəticələri və məktəbin qazandığı müsabiqələr.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-band-muted">{s.result_year}-ci tədris ilinin buraxılış nəticələri</p>
+              <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-white/15 pt-5">
+                {[
+                  [s.result_graduates, "XI sinfi bitirən məzun"],
+                  [s.result_admitted, "ali təhsil müəssisəsinə qəbul olub"],
+                  [s.result_600, "məzun 600-dən yuxarı bal toplayıb"],
+                ].map(([v, l]) => (
+                  <div key={l} className="flex flex-col-reverse">
+                    <dd className="font-display text-[2.4rem] font-extrabold leading-none tracking-tight text-gold tabular-nums md:text-6xl">{v}</dd>
+                    <dt className="mb-3 text-[13px] leading-snug text-band-muted">{l}</dt>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <section aria-labelledby="awards-h">
-          <h2 id="awards-h" className="mb-5 text-2xl">Məktəbin nailiyyətləri</h2>
-          <ul className="grid gap-4 md:grid-cols-2">
-            <li className="flex gap-4 rounded-md border border-line bg-surface p-5">
-              <Award className="mt-0.5 size-6 shrink-0 text-gold" aria-hidden="true" />
-              <p className="font-semibold">“Təhsildə inkişaf və innovasiyalar üzrə Qrant müsabiqəsi”nin qalibi</p>
-            </li>
-            <li className="flex gap-4 rounded-md border border-line bg-surface p-5">
-              <Award className="mt-0.5 size-6 shrink-0 text-gold" aria-hidden="true" />
-              <div>
-                <p className="font-semibold">Məktəbin rəsmi saytı “Ən yaxşı məktəb saytı” müsabiqəsinin qalibi</p>
-                <p className="mt-1 text-sm text-ink-3">2021-2022-ci tədris ili</p>
-              </div>
-            </li>
-            {wins.map((w) => (
-              <li key={w.id} className="flex gap-4 rounded-md border border-line bg-surface p-5">
-                {w.image_url ? (
+      <div className="sheet">
+        <section className="container-page pb-4 pt-10 md:pt-14" aria-labelledby="awards-h">
+          <SectionHeading id="awards-h" eyebrow="Fəxrimiz" title="Məktəbin nailiyyətləri" />
+          <ul className="grid gap-3 md:grid-cols-2 md:gap-4">
+            {awards.map((w) => (
+              <li key={w.id} className="flex gap-4 rounded-2xl border border-line bg-surface p-5 md:p-6">
+                {w.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={w.image_url} alt="" loading="lazy" className="size-16 shrink-0 rounded object-cover" />
+                  <img src={w.image} alt="" loading="lazy" className="size-16 shrink-0 rounded-xl object-cover" />
                 ) : (
-                  <Award className="mt-0.5 size-6 shrink-0 text-gold" aria-hidden="true" />
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold-ink" aria-hidden="true"><Award className="size-5" /></span>
                 )}
-                <div>
-                  <p className="font-semibold">{w.title_az}</p>
-                  {w.year_label && <p className="mt-1 text-sm text-ink-3">{w.year_label}</p>}
-                  {w.description_az && <p className="mt-2 text-sm text-ink-2">{w.description_az}</p>}
+                <div className="min-w-0">
+                  <p className="font-semibold leading-snug">{w.title}</p>
+                  {w.year && <p className="mt-1 text-sm text-ink-3">{w.year}</p>}
+                  {w.desc && <p className="mt-2 text-sm text-ink-2">{w.desc}</p>}
                 </div>
               </li>
             ))}
           </ul>
         </section>
 
-        <section aria-labelledby="lists-h">
-          <h2 id="lists-h" className="mb-2 text-2xl">Ətraflı siyahılar</h2>
-          <p className="mb-5 max-w-2xl text-sm text-ink-3">Medal sahibləri, olimpiada qalibləri və fərqlənən məzunların adlı siyahıları Bakı məktəbləri portalındakı rəsmi səhifəmizdə dərc olunur.</p>
+        <section className="container-page section pb-4" aria-labelledby="lists-h">
+          <SectionHeading
+            id="lists-h"
+            eyebrow="Rəsmi mənbə"
+            title="Ətraflı siyahılar"
+            description="Medal sahibləri, olimpiada qalibləri və fərqlənən məzunların adlı siyahıları Bakı məktəbləri portalındakı rəsmi səhifəmizdə dərc olunur."
+          />
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {OFFICIAL_LISTS.map(([label, url]) => (
               <li key={url}>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-4 py-3 text-sm font-semibold hover:border-primary/40 hover:text-primary">
-                  {label} <ExternalLink className="size-4 shrink-0 text-ink-3" aria-hidden="true" />
+                <a href={url} target="_blank" rel="noopener noreferrer" className="group flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-5 py-4 font-semibold transition-colors hover:border-primary/40 hover:text-primary">
+                  {label}
+                  <ExternalLink className="size-4 shrink-0 text-ink-3 group-hover:text-primary" aria-hidden="true" />
+                  <span className="sr-only">(yeni pəncərədə açılır)</span>
                 </a>
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-ink-3">Mənbə: bakimektebleri.edu.az/205</p>
+          <p className="mt-4 text-xs text-ink-3">Mənbə: bakimektebleri.edu.az/205</p>
         </section>
       </div>
     </>

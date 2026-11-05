@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Clock, Mail, MapPin, MapPinned, Phone } from "lucide-react";
 import { getSettings } from "@/server/settings";
-import { PageIntro } from "@/components/site/parts";
+import { PageHero } from "@/components/site/parts";
 
 export const metadata: Metadata = { title: "Əlaqə", description: "Məktəbin ünvanı, telefon və e-poçt məlumatları.", alternates: { canonical: "/contact" } };
 
@@ -28,25 +29,46 @@ export default async function ContactPage() {
   ].filter((r) => r.value);
   return (
     <>
-      <PageIntro eyebrow="Məktəb" title="Əlaqə" crumbs={[{ label: "Əlaqə" }]}>{s.school_name}</PageIntro>
-      <div className="container-page grid gap-10 py-10 lg:grid-cols-[1fr_1.4fr]">
-        <ul className="space-y-4">
-          {rows.map(({ Icon, label, value, href }) => (
-            <li key={label} className="flex gap-4 rounded-lg border border-line bg-surface p-5">
-              <Icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-              <div className="min-w-0 break-words">
-                <p className="text-xs uppercase tracking-wide text-ink-3">{label}</p>
-                {href ? <a href={href} className="font-medium hover:text-primary">{value}</a> : <p className="font-medium">{value}</p>}
+      <PageHero title="Əlaqə" subtitle={s.school_name} crumbs={[{ label: "Əlaqə" }]} compact imagePosition="50% 75%" />
+      <div className="sheet">
+        <div className="container-page grid gap-8 pb-4 pt-8 md:pt-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-10">
+          <div className="space-y-6">
+            <ul className="card divide-y divide-line">
+              {rows.map(({ Icon, label, value, href }) => (
+                <li key={label} className="flex gap-4 p-5 sm:p-6">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary" aria-hidden="true"><Icon className="size-5" /></span>
+                  <div className="min-w-0 break-words">
+                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-ink-3">{label}</p>
+                    {href ? (
+                      <a href={href} className="mt-1 block text-lg font-semibold text-ink hover:text-primary">{value}</a>
+                    ) : (
+                      <p className="mt-1 text-lg font-semibold text-ink">{value}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="rounded-2xl bg-band p-6 text-band-ink">
+              <h2 className="font-display text-lg font-bold">Müəllimlə və ya sinif rəhbəri ilə əlaqə</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-band-muted">
+                Müəllimlərin şəxsi əlaqə məlumatları ictimai saytda dərc olunmur. Valideyn və şagirdlər elektron kabinet vasitəsilə və ya məktəb rəhbərliyinə müraciət edə bilər.
+              </p>
+              <Link href="/login" className="mt-5 inline-flex h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#092b63] hover:bg-[#eaf1ff]">
+                Elektron kabinet <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+          <div className="card min-h-[22rem] overflow-hidden lg:min-h-full">
+            {map ? (
+              <iframe src={map} title="Məktəbin xəritədə yeri" className="h-[22rem] w-full md:h-[28rem] lg:h-full lg:min-h-[32rem]" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+            ) : (
+              <div className="flex h-full min-h-[22rem] flex-col items-center justify-center gap-3 bg-surface-2 p-8 text-center">
+                <span className="flex size-14 items-center justify-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><MapPinned className="size-7" /></span>
+                <p className="font-display text-lg font-semibold">{s.address}</p>
+                <p className="max-w-sm text-sm text-ink-3">Xəritə administrator panelindən (Sayt parametrləri) əlavə edildikdən sonra burada görünəcək.</p>
               </div>
-            </li>
-          ))}
-        </ul>
-        <div className="overflow-hidden rounded-lg border border-line bg-surface-2">
-          {map ? (
-            <iframe src={map} title="Məktəbin xəritədə yeri" className="h-[420px] w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-          ) : (
-            <div className="flex h-full min-h-60 items-center justify-center p-6 text-center text-sm text-ink-3">Xəritə administrator panelindən əlavə edildikdən sonra burada görünəcək.</div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </>

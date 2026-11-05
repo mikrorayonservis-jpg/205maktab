@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { publicTeacher } from "@/server/content";
-import { PageIntro } from "@/components/site/parts";
-import { initials } from "@/lib/utils";
+import { Breadcrumbs, Portrait } from "@/components/site/parts";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -22,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TeacherPage({ params }: Props) {
   const t = await load(params);
   if (!t) notFound();
+  const name = `${t.first_name} ${t.last_name}`;
   const facts = [
     ["Tədris etdiyi fənn", t.subject],
     ["Vəzifə", t.position_az],
@@ -31,31 +33,42 @@ export default async function TeacherPage({ params }: Props) {
   ].filter((f) => f[1]);
   return (
     <>
-      <PageIntro eyebrow={t.subject ?? "Müəllim"} title={`${t.first_name} ${t.last_name}`} crumbs={[{ href: "/teachers", label: "Müəllimlər" }, { label: `${t.first_name} ${t.last_name}` }]} />
-      <div className="container-page grid gap-10 py-12 md:grid-cols-[240px_1fr]">
-        <div className="aspect-square w-full max-w-[240px] overflow-hidden rounded-lg bg-surface-2">
-          {t.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={t.avatar_url} alt={`${t.first_name} ${t.last_name}`} className="size-full object-cover" />
-          ) : (
-            <div className="flex size-full items-center justify-center font-display text-5xl text-primary">{initials(`${t.first_name} ${t.last_name}`)}</div>
-          )}
+      <section className="border-b border-line bg-surface">
+        <div className="container-page pb-10 pt-8 md:pb-12 md:pt-12">
+          <Breadcrumbs items={[{ href: "/", label: "Ana səhifə" }, { href: "/teachers", label: "Müəllimlər" }, { label: name }]} />
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+            <Portrait name={name} url={t.avatar_url} rounded="xl" className="size-28 md:size-36" textClass="text-4xl" />
+            <div className="min-w-0">
+              {t.subject && <p className="eyebrow mb-2">{t.subject}</p>}
+              <h1 className="font-display text-[clamp(1.75rem,1.3rem+1.8vw,2.6rem)] font-extrabold leading-tight tracking-tight">{name}</h1>
+              {t.position_az && <p className="mt-1 text-lg text-ink-2">{t.position_az}</p>}
+            </div>
+          </div>
         </div>
-        <div className="max-w-2xl">
-          <dl className="grid gap-4 sm:grid-cols-2">
+      </section>
+      <div className="container-page grid gap-10 py-10 md:py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-14">
+        {facts.length > 0 && (
+          <dl className="card h-fit divide-y divide-line">
             {facts.map(([k, v]) => (
-              <div key={k} className="rounded-lg border border-line bg-surface p-4">
-                <dt className="text-xs uppercase tracking-wide text-ink-3">{k}</dt>
-                <dd className="mt-1 font-medium">{v}</dd>
+              <div key={k} className="grid gap-1 px-5 py-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
+                <dt className="text-sm text-ink-3">{k}</dt>
+                <dd className="font-medium">{v}</dd>
               </div>
             ))}
           </dl>
-          {t.bio && (
-            <section className="mt-8">
-              <h2 className="mb-2 text-xl font-semibold">Qısa bioqrafiya</h2>
-              <p className="whitespace-pre-line leading-relaxed text-ink-2">{t.bio}</p>
+        )}
+        <div className="min-w-0">
+          {t.bio ? (
+            <section>
+              <h2 className="mb-3 font-display text-xl font-bold">Qısa bioqrafiya</h2>
+              <p className="whitespace-pre-line text-[1.0625rem] leading-relaxed text-ink-2">{t.bio}</p>
             </section>
+          ) : (
+            <p className="text-ink-3">Bioqrafiya əlavə edilməyib.</p>
           )}
+          <Link href="/teachers" className="mt-10 inline-flex min-h-11 items-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-sm font-semibold text-ink hover:border-primary hover:text-primary">
+            <ArrowLeft className="size-4" aria-hidden="true" /> Bütün müəllimlər
+          </Link>
         </div>
       </div>
     </>

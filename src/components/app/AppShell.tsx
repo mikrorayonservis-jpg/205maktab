@@ -70,9 +70,9 @@ export function AppShell({ nav, user, children }: { nav: NavGroup[]; user: { ful
   const sidebar = (
     <nav aria-label="Kabinet menyusu" className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-line px-4">
-        <Image src="/assets/logo/logo-128.webp" alt="" width={32} height={32} />
+        <Image src="/assets/logo/logo-128.webp" alt="" width={36} height={36} className="size-9 object-contain" />
         <div className="min-w-0 leading-tight">
-          <p className="truncate font-display text-sm font-semibold">205 nömrəli məktəb</p>
+          <p className="truncate font-display text-sm font-bold">205 nömrəli məktəb</p>
           <p className="text-xs text-ink-3">Elektron jurnal</p>
         </div>
       </div>
@@ -86,7 +86,7 @@ export function AppShell({ nav, user, children }: { nav: NavGroup[]; user: { ful
                 const on = active(path, it.href);
                 return (
                   <li key={it.href}>
-                    <Link href={it.href} aria-current={on ? "page" : undefined} className={cn("flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm", on ? "bg-primary-soft font-medium text-primary" : "text-ink-2 hover:bg-surface-2 hover:text-ink")}>
+                    <Link href={it.href} aria-current={on ? "page" : undefined} className={cn("flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors", on ? "bg-primary-soft font-semibold text-primary shadow-[inset_3px_0_0_var(--primary)]" : "text-ink-2 hover:bg-surface-2 hover:text-ink")}>
                       <Icon className="size-4 shrink-0" aria-hidden="true" />
                       <span className="truncate">{it.label}</span>
                       {it.href === "/notifications" && unread > 0 && (
