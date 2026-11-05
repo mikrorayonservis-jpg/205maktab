@@ -255,6 +255,15 @@ Not inspectable from this session: live database contents (users, existing rows)
 - Warm “paper” palette + deep navy + gold (`globals.css` tokens), display serif **Noto Serif Display** via `next/font/google` (downloaded at build time, self-hosted → CSP `font-src 'self'` unchanged; build needs internet once).
 - Homepage: photo hero with serif headline, overlapping stats card, rounded news cards, about section with image, achievements band; header pill navigation + “Kabinet” button; footer with social links (text, no brand logos).
 
+### Auth redesign, password policy, overflow fix, local test tooling (05.11.2026)
+
+- Login, signup, password reset and email verification share one shell: `src/components/auth/{AuthHeader,AuthSplit,AuthField}.tsx` (header with Ana səhifə / Qeydiyyat / Giriş, desktop two-column with the real building photo, phone full-width form; labelled 48px fields, 16px text, password eye toggle, `--navy` button token). `/register` moved out of the `(card)` group (URL unchanged) and now redirects signed-in users. `AuthInput.tsx` removed.
+- Password policy (`src/lib/password-policy.ts`): `standard` (default: 8–128 chars, any characters, very common passwords rejected) or `strong`. The old `digits` mode (numbers only) is removed; `NEXT_PUBLIC_PASSWORD_POLICY=digits` now behaves as `standard`. Existing passwords are not re-validated.
+- Page-wide horizontal overflow on phones: `<th><span class="sr-only">` inside `overflow-x-auto` escaped the scroll container (no positioned ancestor) and widened the whole page (reproduced on `/reports` at 320px: scrollWidth 454 → 320). Fix: `:where(.overflow-x-auto, .overflow-auto) { position: relative }` in `globals.css`. Same pattern in the Audit table (visible from 768px, e.g. phones in landscape), invitations and homework tables. iOS date-input min-width guard added.
+- `clientIp()` trusts `X-Forwarded-For` on Vercel (`VERCEL=1`) as well as with `TRUST_PROXY=1`, so per-IP limits (login, register/class-code guessing, reset) work on Vercel.
+- Student import accepts `.xlsx` (first sheet, converted to CSV in the browser by `src/lib/client/xlsx-to-csv.ts`; the server validates the CSV exactly as before).
+- Tooling: `npm run dev:local` (in-memory PGlite Postgres on 127.0.0.1:5433 + migrations + demo school + test admin with a hidden password prompt + class 10B code + `next dev`; never touches Supabase), `npm run verify:local` (typecheck, unit, build, integration against PGlite; log in `test-results/verify-local.txt`), `npm run diagnose:admin -- <emails>` (read-only live DB check: migrations, permissions, identity sequences, RLS, storage bucket, recent creates).
+
 ## 12. Recommended roadmap
 
 1. **Stabilize environment:** move project out of OneDrive, `git init` + first commit (exclude `.env`, `storage`, `_backup`), review `npm audit`.

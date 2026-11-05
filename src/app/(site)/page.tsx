@@ -55,29 +55,29 @@ export default async function HomePage() {
         }}
       />
 
-      {/* 1. Məktəbin təqdimatı */}
+      {/* 1. Məktəbin təqdimatı + 2. rəsmi göstəricilər (bir blokda, istinad dizaynına uyğun) */}
       <section className="border-b border-line bg-surface-warm" aria-labelledby="hero-title">
-        <div className="container-page grid items-center gap-10 py-10 md:py-14 lg:grid-cols-[1fr_1.05fr] lg:gap-14 lg:py-16">
+        <div className="container-page grid items-center gap-10 pb-12 pt-8 md:pb-14 md:pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.04fr)] lg:gap-14 lg:pb-16 lg:pt-16">
           <div>
             <p className="eyebrow mb-4">Bakı şəhəri · {s.founded_year}-cu ildən</p>
-            <h1 id="hero-title" className="text-[2rem] leading-[1.15] md:text-[2.75rem]">
+            <h1 id="hero-title" className="text-[2rem] leading-[1.14] min-[400px]:text-[2.25rem] md:text-[2.75rem] xl:text-[3.1rem]">
               Rövşən İmanov adına <span className="text-primary">205 nömrəli</span> tam orta ümumtəhsil məktəbi
             </h1>
-            <p className="mt-5 max-w-xl text-[1.0625rem] leading-relaxed text-ink-2">{s.hero_text}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/about" className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-ink hover:bg-primary-hover">
+            <p className="mt-5 max-w-[34rem] text-[1.0625rem] leading-relaxed text-ink-2">{s.hero_text}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/about" className="inline-flex h-12 items-center gap-2 rounded-lg bg-navy px-5 text-[15px] font-semibold text-navy-ink shadow-[0_8px_20px_-12px_rgb(20_43_99/0.7)] transition-colors hover:bg-navy-hover">
                 Məktəb haqqında <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
-              <Link href="/news" className="inline-flex h-11 items-center gap-2 rounded-md border border-line-strong bg-surface px-5 text-sm font-semibold text-ink hover:border-primary hover:text-primary">
+              <Link href="/news" className="inline-flex h-12 items-center gap-2 rounded-lg border border-line-strong bg-surface px-5 text-[15px] font-semibold text-ink transition-colors hover:border-primary hover:text-primary">
                 Xəbərlər
               </Link>
-              <Link href="/login" className="inline-flex h-11 items-center gap-2 px-2 text-sm font-semibold text-primary hover:underline">
+              <Link href="/login" className="inline-flex h-12 items-center gap-2 rounded-lg px-2 text-[15px] font-semibold text-primary hover:underline">
                 <LogIn className="size-4" aria-hidden="true" /> Elektron kabinet
               </Link>
             </div>
           </div>
           <div className="relative">
-            <div className="overflow-hidden rounded-md border border-line bg-surface-2">
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface-2 shadow-lift">
               <Image
                 src="/assets/images/mekteb-bina-1438.webp"
                 alt="Rövşən İmanov adına 205 nömrəli tam orta məktəbin binasının fasadı"
@@ -88,32 +88,33 @@ export default async function HomePage() {
                 className="aspect-[4/3] w-full object-cover object-[50%_40%]"
               />
             </div>
-            <div className="absolute -bottom-5 left-4 flex items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 shadow-lift sm:left-6">
-              <Image src="/assets/logo/logo-128.webp" alt="" width={48} height={48} className="size-12 object-contain" />
-              <div className="leading-tight">
+            <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-xl border border-line bg-surface/95 px-4 py-3 shadow-lift sm:right-auto sm:bottom-5 sm:left-5">
+              <Image src="/assets/logo/logo-128.webp" alt="" width={48} height={48} className="size-11 shrink-0 object-contain sm:size-12" />
+              <div className="min-w-0 leading-tight">
                 <p className="text-xs text-ink-3">Milli Qəhrəman</p>
                 <p className="font-display text-sm font-bold">Rövşən İmanovun adını daşıyır</p>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* 2. Göstəricilər (rəsmi məlumat) */}
-      {stats.length > 0 && (
-        <section aria-labelledby="stats-h" className="container-page pt-14">
-          <h2 id="stats-h" className="sr-only">Məktəb göstəriciləri</h2>
-          <dl className="grid grid-cols-2 divide-line border-y border-line md:grid-cols-4 md:divide-x">
-            {stats.map(([v, l], i) => (
-              <div key={l} className={`flex flex-col-reverse px-4 py-6 md:px-6 ${i % 2 ? "border-l border-line md:border-l-0" : ""} ${i > 1 ? "border-t border-line md:border-t-0" : ""}`}>
-                <dd className="font-display text-[2.25rem] font-extrabold tabular-nums leading-none text-ink md:text-[2.75rem]">{v}</dd>
-                <dt className="mb-2 text-xs font-semibold uppercase tracking-[0.1em] text-ink-3">{l}</dt>
-              </div>
-            ))}
-          </dl>
-          <p className="mt-2 text-xs text-ink-3">{s.stat_year}-ci tədris ili üzrə rəsmi məlumat.</p>
-        </section>
-      )}
+        {stats.length > 0 && (
+          <div className="border-t border-line bg-surface">
+            <div className="container-page py-6 md:py-8">
+              <h2 id="stats-h" className="sr-only">Məktəb göstəriciləri</h2>
+              <dl className="grid grid-cols-2 gap-y-6 md:grid-cols-4">
+                {stats.map(([v, l]) => (
+                  <div key={l} className="flex flex-col-reverse border-l-2 border-line pl-4 md:pl-6">
+                    <dd className="font-display text-[2rem] font-extrabold tabular-nums leading-none text-ink md:text-[2.5rem]">{v}</dd>
+                    <dt className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3">{l}</dt>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-4 text-xs text-ink-3">{s.stat_year}-ci tədris ili üzrə rəsmi məlumat.</p>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* 3. Son xəbərlər */}
       {lead && (

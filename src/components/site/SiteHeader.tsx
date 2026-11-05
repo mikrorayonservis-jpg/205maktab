@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, LogIn, Mail, MapPin, Phone } from "lucide-react";
+import { LayoutGrid, Mail, MapPin, Phone } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getSettings } from "@/server/settings";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -58,15 +58,9 @@ export async function SiteHeader() {
         <MainNav items={NAV} loggedIn={Boolean(user)} />
         <div className="ml-auto hidden items-center sm:flex xl:ml-3">
           <ThemeToggle className="mr-2" />
-          {user ? (
-            <Link href="/dashboard" className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-ink hover:bg-primary-hover">
-              <LayoutDashboard className="size-4" aria-hidden="true" /> Kabinet
-            </Link>
-          ) : (
-            <Link href="/login" className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-ink hover:bg-primary-hover">
-              <LogIn className="size-4" aria-hidden="true" /> Giriş
-            </Link>
-          )}
+          <Link href={user ? "/dashboard" : "/login"} className="inline-flex h-10 items-center gap-2 rounded-lg bg-navy px-4 text-sm font-semibold text-navy-ink transition-colors hover:bg-navy-hover">
+            <LayoutGrid className="size-4" aria-hidden="true" /> Kabinet
+          </Link>
         </div>
       </div>
     </header>

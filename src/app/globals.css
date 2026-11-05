@@ -32,8 +32,11 @@
   --focus: #2457a6;
   /* Giriş: brendin göyündən daha tünd ton (ikon, fokus, yüklənmə) və düymənin keçidi */
   --login-accent: #1d3a7a;
-  --login-btn: linear-gradient(100deg, #142b63 0%, #2457a6 100%);
-  --login-btn-hover: linear-gradient(100deg, #10234f 0%, #1c4688 100%);
+  /* Brend: rəsmi tünd kral göyü (əsas düymələr, giriş/qeydiyyat) və autentifikasiya fonu */
+  --navy: #1c4597;
+  --navy-hover: #163777;
+  --navy-ink: #ffffff;
+  --auth-bg: linear-gradient(180deg, #e6effb 0%, #f3f7fd 46%, #fbfaf7 100%);
   --shadow: 0 1px 2px rgb(23 43 69 / 0.05);
   --shadow-lift: 0 10px 30px -14px rgb(23 43 69 / 0.22), 0 1px 3px rgb(23 43 69 / 0.06);
   --display: var(--font-heading-face, "Segoe UI"), "Segoe UI", system-ui, sans-serif;
@@ -67,8 +70,10 @@
   --warning-soft: #2e2213;
   --focus: #8db1ea;
   --login-accent: #8db1ea;
-  --login-btn: linear-gradient(100deg, #1f4690 0%, #3a6fc4 100%);
-  --login-btn-hover: linear-gradient(100deg, #24519f 0%, #4a7dd0 100%);
+  --navy: #3a6fc4;
+  --navy-hover: #4a7dd0;
+  --navy-ink: #ffffff;
+  --auth-bg: linear-gradient(180deg, #111b2b 0%, #0e1622 55%, #0c121c 100%);
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-lift: 0 18px 40px -18px rgb(0 0 0 / 0.7);
   color-scheme: dark;
@@ -91,6 +96,9 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-gold: var(--gold);
+  --color-navy: var(--navy);
+  --color-navy-hover: var(--navy-hover);
+  --color-navy-ink: var(--navy-ink);
   --color-gold-soft: var(--gold-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
@@ -140,6 +148,22 @@
      :where() sıfır spesifiklik verir — açıq min-w-* utilitləri üstün qalır. */
   :where(.grid) > * {
     min-width: 0;
+  }
+  /* iOS Safari: tarix/vaxt sahələrinin daxili minimum eni var və width:100%-ə baxmadan kiçik ekranda
+     konteynerdən çıxır (məs. Audit filtrləri 2 sütunda). Sahə konteynerinin enində qalsın. */
+  /* Üfüqi sürüşən konteyner (cədvəl) mövqeli olmalıdır: əks halda içindəki absolute elementlər (məs. <th>-dəki
+     sr-only mətn) konteynerin kəsimindən çıxır və bütün səhifəni sağa doğru genişləndirir (telefonda üfüqi sürüşmə). */
+  :where(.overflow-x-auto, .overflow-auto) {
+    position: relative;
+  }
+  input[type="date"], input[type="time"], input[type="datetime-local"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value {
+    text-align: left;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -233,8 +257,7 @@
   .table-base tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
 
   /* Giriş səhifəsi: vərəq aşağıdan qalxır (iOS drawer əyrisi), şəkil yumşaq açılır, məzmun ardıcıl görünür */
-  .login-hero-img { animation: login-hero 700ms cubic-bezier(0.23, 1, 0.32, 1) both; }
-  .login-sheet { animation: login-rise 520ms cubic-bezier(0.32, 0.72, 0, 1) 80ms both; }
+  .auth-rise { animation: login-rise 480ms cubic-bezier(0.23, 1, 0.32, 1) 60ms both; }
   .login-stagger > * { animation: login-fade 360ms cubic-bezier(0.23, 1, 0.32, 1) both; }
   .login-stagger > *:nth-child(1) { animation-delay: 200ms; }
   .login-stagger > *:nth-child(2) { animation-delay: 245ms; }
@@ -245,8 +268,7 @@
   .login-shake { animation: login-shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
   .login-overlay { animation: login-fade 200ms ease-out both; }
   .login-orbit { animation: login-spin 1100ms linear infinite; }
-  @keyframes login-hero { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
-  @keyframes login-rise { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: none; } }
+  @keyframes login-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
   @keyframes login-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @keyframes login-shake {
     20%, 60% { transform: translateX(-6px); }
@@ -255,7 +277,7 @@
   @keyframes login-spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) {
     /* Hərəkət yox, məzmun dərhal görünür; yüklənmə göstəricisi dayanıqlı qalır (sonsuz fırlanma titrəməsin) */
-    .login-hero-img, .login-sheet, .login-stagger > *, .login-shake, .login-overlay { animation: none; }
+    .auth-rise, .login-stagger > *, .login-shake, .login-overlay { animation: none; }
     .login-orbit { animation: none; }
   }
 }

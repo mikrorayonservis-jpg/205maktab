@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkPassword, passwordSchemaFor } from "../../src/lib/password-policy.ts";
+import { checkPassword, passwordInputProps, passwordSchemaFor } from "../../src/lib/password-policy.ts";
 
-const digits8 = { mode: "digits", length: 8 };
+const standard = { mode: "standard" };
 const strong = { mode: "strong" };
 
-test("digits rejimi: yalnız düz 8 rəqəm qəbul edilir", () => {
-  assert.equal(checkPassword("12345678", digits8), null);
-  for (const bad of ["1234567", "123456789", "1234567a", "abcdefgh", "1234 678", ""]) assert.ok(checkPassword(bad, digits8), bad);
+test("standard rejimi: hərf, rəqəm və işarə qəbul edilir (yalnız rəqəm məhdudiyyəti yoxdur)", () => {
+  for (const ok of ["qwertasd", "mekteb-ve-ev", "Şagird2026", "kitab123", "20261105", "p@rol uzun ifadə"]) assert.equal(checkPassword(ok, standard), null, ok);
+  for (const bad of ["", "qısa1", "1234567", "        ", "aaaaaaaa", "12345678", "Password", "QWERTYUI", "x".repeat(129)]) assert.ok(checkPassword(bad, standard), bad);
 });
 
 test("strong rejimi: uzunluq, böyük/kiçik hərf və rəqəm tələb olunur", () => {
@@ -16,8 +16,15 @@ test("strong rejimi: uzunluq, böyük/kiçik hərf və rəqəm tələb olunur", 
   for (const bad of ["12345678", "qısa1A", "hamisikicik2026", "HAMISIBOYUK2026", "HerfRəqəmsiz"]) assert.ok(checkPassword(bad, strong), bad);
 });
 
+test("parol sahəsi rəqəmli klaviaturaya və ya rəqəm şablonuna məhdudlaşdırılmır", () => {
+  const props = passwordInputProps();
+  assert.equal(props.inputMode, undefined);
+  assert.equal(props.pattern, undefined);
+  assert.equal(props.maxLength, 128);
+});
+
 test("server sxemi brauzer yoxlaması ilə eyni nəticə verir", () => {
-  for (const [p, v] of [[digits8, "12345678"], [digits8, "1234"], [strong, "Mekteb2026x"], [strong, "zeif"]]) {
+  for (const [p, v] of [[standard, "qwertasd"], [standard, "1234"], [standard, "12345678"], [strong, "Mekteb2026x"], [strong, "zeif"]]) {
     assert.equal(passwordSchemaFor(p).safeParse(v).success, checkPassword(v, p) === null);
   }
 });

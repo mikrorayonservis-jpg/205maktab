@@ -132,8 +132,8 @@ export function MainNav({ items, loggedIn = false }: { items: Item[]; loggedIn?:
               )}
             </div>
             <div className="border-t border-line p-4">
-              <Link href={loggedIn ? "/dashboard" : "/login"} className="flex h-11 w-full items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-ink">
-                {loggedIn ? "Kabinet" : "Giriş"}
+              <Link href={loggedIn ? "/dashboard" : "/login"} className="flex h-12 w-full items-center justify-center rounded-lg bg-navy text-[15px] font-semibold text-navy-ink hover:bg-navy-hover">
+                {loggedIn ? "Kabinet" : "Kabinetə giriş"}
               </Link>
             </div>
           </div>

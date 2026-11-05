@@ -34,7 +34,7 @@ Vercel, so they now go to Supabase Storage.
 | `TRUST_PROXY` | `1` | `1` | — | no | Vercel sets `X-Forwarded-For`; needed for per-IP rate limits |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | ✓ | optional | — | `SMTP_PASSWORD` yes | Without SMTP, invited users cannot verify email and cannot log in |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | optional | optional | optional | no | Not used by the code today (no browser client). Harmless to set. |
-| `NEXT_PUBLIC_PASSWORD_POLICY` | `digits` (testing) / `strong` | same | same | no | `digits` = exactly `NEXT_PUBLIC_PASSWORD_DIGITS` numbers (default 8). Build-time value: redeploy after changing. Switch back to `strong` before real use. |
+| `NEXT_PUBLIC_PASSWORD_POLICY` | `standard` (default) / `strong` | same | same | no | `standard` = at least 8 characters, any letters/digits/symbols, common passwords rejected. `strong` = 10+ with upper/lower case and a digit. The old `digits` value is no longer supported and behaves as `standard`. Build-time value: redeploy after changing. |
 | `REGISTRATION_INVITE_CODE` | e.g. `admin123` | — | — | **yes** | General registration code. Only allows sign-up; new accounts have **no role** until an admin assigns one. Leave empty to allow only personal invitation codes. |
 | `REGISTRATION_AUTO_VERIFY` | `1` only while SMTP is missing | — | — | no | Skips email verification for general-code sign-ups. |
 

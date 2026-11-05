@@ -35,3 +35,12 @@ test("ümumi kod: yanlış kod, zəif parol və təkrar e-poçt rədd edilir; ko
   const html = await (await new Client().raw("/register")).text();
   assert.ok(!html.toLowerCase().includes("test-umumi-kod"), "kod səhifəyə düşməməlidir");
 });
+
+test("parol siyasəti: hərflərdən ibarət parol qəbul edilir (yalnız rəqəm məhdudiyyəti yoxdur), qısa və geniş yayılmış parol rədd edilir", async () => {
+  const letters = "mekteb-ve-ailə";
+  assert.equal((await reg("umumi5@demo.local", "test-umumi-kod", letters)).status, 201);
+  assert.equal((await login("umumi5@demo.local", letters)).constructor.name, "Client");
+  assert.equal((await reg("umumi6@demo.local", "test-umumi-kod", "abc12")).status, 422);
+  assert.equal((await reg("umumi7@demo.local", "test-umumi-kod", "12345678")).status, 422);
+  assert.equal((await q("SELECT COUNT(*) AS n FROM users WHERE email IN ('umumi6@demo.local', 'umumi7@demo.local')"))[0].n, 0);
+});

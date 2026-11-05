@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { FormField, Textarea } from "@/components/ui/Field";
 import { Alert, Badge } from "@/components/ui/Feedback";
 import { useToast } from "@/components/ui/Toast";
+import { xlsxToCsv } from "@/lib/client/xlsx-to-csv";
 
 type Status = "create" | "move" | "unchanged" | "error";
 interface Row { line: number; status: Status; studentCode: string; name: string; className: string | null; fromClass: string | null; message?: string }
@@ -39,9 +40,20 @@ export function ImportClient() {
   async function readFile(f: File | undefined) {
     if (!f) return;
     if (f.size > 2_000_000) { setError("Fayl çox böyükdür (2 MB-a qədər)."); return; }
-    setFileName(f.name);
-    setCsv(await f.text());
     setReport(null);
+    if (/\.xlsx$/i.test(f.name)) {
+      try {
+        setCsv(await xlsxToCsv(f));
+      } catch (e) {
+        setCsv("");
+        setFileName(null);
+        setError((e as Error).message || "Excel faylı oxunmadı. Faylı “CSV UTF-8” kimi saxlayıb yenidən cəhd edin.");
+        return;
+      }
+    } else {
+      setCsv(await f.text());
+    }
+    setFileName(f.name);
   }
 
   async function check() {
@@ -66,7 +78,7 @@ export function ImportClient() {
         <p className="mt-1 text-sm text-ink-2">
           Sütunlar: <code className="font-mono text-xs">student_id</code> (şagird kodu), <code className="font-mono text-xs">first_name</code>, <code className="font-mono text-xs">last_name</code>, <code className="font-mono text-xs">class_code</code>.
           Sinif kodu əvəzinə aktiv tədris ilindəki sinif adı da yazıla bilər (<code className="font-mono text-xs">class_name</code>, məs. 10-B).
-          Excel-də “CSV UTF-8” kimi saxlayın; vergül və nöqtəli vergül ayırıcıları tanınır.
+          Excel faylını (.xlsx, ilk vərəq) birbaşa seçə və ya “CSV UTF-8” kimi saxlaya bilərsiniz; vergül və nöqtəli vergül ayırıcıları tanınır. Excel faylı brauzerdə CSV-yə çevrilir və aşağıdakı sahədə görünür.
         </p>
         <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm text-ink-2">
           <li>Şagird kodu bazada varsa, şagird təkrar yaradılmır — yalnız sinfi dəyişir.</li>
@@ -81,9 +93,9 @@ export function ImportClient() {
       <section className="space-y-3">
         <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line-strong bg-surface p-5 text-center hover:bg-surface-2">
           <Upload className="size-5 text-ink-3" aria-hidden="true" />
-          <span className="text-sm font-medium text-ink">{fileName ?? "CSV faylını seçin"}</span>
-          <span className="text-xs text-ink-3">.csv, 2 MB-a qədər, ən çox 5000 sətir</span>
-          <input type="file" accept=".csv,text/csv,text/plain" className="sr-only" onChange={(e) => readFile(e.target.files?.[0])} />
+          <span className="text-sm font-medium text-ink">{fileName ?? "Excel və ya CSV faylını seçin"}</span>
+          <span className="text-xs text-ink-3">.xlsx və ya .csv, 2 MB-a qədər, ən çox 5000 sətir</span>
+          <input type="file" accept=".xlsx,.csv,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr-only" onChange={(e) => readFile(e.target.files?.[0])} />
         </label>
         <FormField id="imp-text" label="və ya mətni bura yapışdırın">
           <Textarea id="imp-text" rows={6} value={csv} onChange={(e) => { setCsv(e.target.value); setFileName(null); setReport(null); }} className="font-mono text-xs" placeholder={TEMPLATE} spellCheck={false} />

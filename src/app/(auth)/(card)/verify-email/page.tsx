@@ -28,7 +28,7 @@ function Verify() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="rounded-md border border-line bg-surface p-6 shadow-sm sm:p-8">
+    <div className="rounded-2xl border border-line bg-surface p-6 shadow-lift sm:p-8">
       <h1 className="mb-6 text-2xl font-semibold">E-poçtun təsdiqi</h1>
       <Suspense fallback={null}><Verify /></Suspense>
     </div>

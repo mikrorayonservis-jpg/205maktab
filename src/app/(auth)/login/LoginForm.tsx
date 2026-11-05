@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Lock, Mail } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { useSubmit } from "@/lib/client/useSubmit";
-import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Feedback";
-import { AuthInput } from "@/components/auth/AuthInput";
+import { AuthField, AuthSubmit } from "@/components/auth/AuthField";
+import { AuthTitle } from "@/components/auth/AuthSplit";
 import { AuthLoading } from "@/components/auth/AuthLoading";
 import { cn } from "@/lib/utils";
 
@@ -50,37 +50,31 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <>
       <div className="login-stagger">
-        <header className="text-center">
-          <h1 className="font-display text-[1.75rem] font-bold leading-tight text-ink">Xoş gəlmisiniz</h1>
-          <p className="mt-1.5 text-sm text-ink-3">Qiymətlər, dərs cədvəli və ev tapşırıqları sizi gözləyir</p>
-        </header>
+        <AuthTitle title="Giriş" subtitle="Qiymətlər, dərs cədvəli və ev tapşırıqları sizi gözləyir" />
 
-        <form onSubmit={onSubmit} noValidate className={cn("mt-7 space-y-3.5", shake && "login-shake")} onAnimationEnd={() => setShake(false)}>
+        <form onSubmit={onSubmit} noValidate className={cn("mt-7 space-y-4", shake && "login-shake")} onAnimationEnd={() => setShake(false)}>
           {error && <Alert tone="danger">{error}</Alert>}
           {unverified && (
             <Alert tone="info">
               {resent ? "Yeni təsdiq keçidi göndərildi." : <button type="button" onClick={resend} className="font-medium text-primary underline">Təsdiq keçidini yenidən göndər</button>}
             </Alert>
           )}
-          <AuthInput id="email" name="email" type="email" label="E-poçt" icon={Mail} placeholder="E-poçt ünvanınız" autoComplete="username" inputMode="email" required error={fields.email} />
-          <AuthInput id="password" name="password" type="password" label="Parol" icon={Lock} placeholder="Parolunuz" autoComplete="current-password" required error={fields.password} />
-          <div className="flex justify-end pt-0.5">
-            <Link href="/forgot-password" className="rounded text-sm font-medium text-[var(--login-accent)] hover:underline">Parolu unutmusunuz?</Link>
+          <AuthField id="email" name="email" type="email" label="E-poçt" placeholder="ad@numune.az" autoComplete="username" inputMode="email" required error={fields.email} />
+          <div>
+            <AuthField id="password" name="password" type="password" label="Parol" autoComplete="current-password" required error={fields.password} />
+            <div className="mt-2 flex justify-end">
+              <Link href="/forgot-password" className="rounded text-sm font-medium text-primary hover:underline">Parolu unutmusunuz?</Link>
+            </div>
           </div>
-          <Button
-            type="submit"
-            size="lg"
-            disabled={loading || leaving}
-            className="group h-14 w-full rounded-xl bg-[image:var(--login-btn)] text-[15px] font-semibold text-white shadow-[0_8px_20px_-10px_rgb(20_43_99/0.6)] hover:bg-[image:var(--login-btn-hover)]"
-          >
+          <AuthSubmit disabled={loading || leaving}>
             Daxil ol
             <ArrowRight className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" aria-hidden="true" />
-          </Button>
+          </AuthSubmit>
         </form>
 
-        <p className="mt-8 text-center text-sm text-ink-3">
+        <p className="mt-6 border-t border-line pt-5 text-center text-sm text-ink-3">
           Hesabınız yoxdur?{" "}
-          <Link href="/register" className="font-semibold text-[var(--login-accent)] hover:underline">Dəvət kodu ilə qeydiyyat</Link>
+          <Link href="/register" className="font-semibold text-primary hover:underline">Dəvət kodu ilə qeydiyyat</Link>
         </p>
       </div>
       {(loading || leaving) && <AuthLoading title="Daxil olunur" subtitle={leaving ? "Kabinetiniz hazırlanır" : "Məlumatlar yoxlanılır"} />}

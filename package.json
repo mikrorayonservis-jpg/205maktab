@@ -17,6 +17,8 @@
     "db:migrate": "node scripts/db-migrate.mjs",
     "db:migrate:test": "node scripts/db-migrate.mjs --test",
     "dev": "next dev",
+    "dev:local": "node scripts/dev-local.mjs",
+    "diagnose:admin": "node scripts/diagnose-admin.mjs",
     "import:newspaper": "node scripts/import-newspaper.mjs",
     "import:official": "node scripts/import-official.mjs",
     "predev": "npm run clean",
@@ -32,6 +34,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "user:status": "node scripts/user-status.mjs",
     "user:verify-email": "node scripts/verify-email.mjs",
+    "verify:local": "node scripts/verify-local.mjs",
     "verify": "npm run typecheck && npm run test:unit && npm run build && npm run test:integration"
   },
   "dependencies": {

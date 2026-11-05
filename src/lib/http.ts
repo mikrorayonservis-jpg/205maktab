@@ -137,8 +137,13 @@ export function requireUser(user: CurrentUser | null): CurrentUser {
   return user;
 }
 
+/**
+ * Müştərinin IP-si. Proxy başlıqlarına yalnız etibarlı proxy arxasında inanılır:
+ * TRUST_PROXY=1 (öz reverse proxy-niz) və ya Vercel (VERCEL=1 — platforma X-Forwarded-For başlığını
+ * özü yazır və müştərinin göndərdiyini əvəz edir). Əks halda "local" qaytarılır və IP limitləri tətbiq olunmur.
+ */
 export function clientIp(req: NextRequest): string {
-  if (process.env.TRUST_PROXY === "1") {
+  if (process.env.TRUST_PROXY === "1" || process.env.VERCEL === "1") {
     const fwd = req.headers.get("x-forwarded-for");
     if (fwd) return fwd.split(",")[0].trim().slice(0, 45);
     const real = req.headers.get("x-real-ip");
