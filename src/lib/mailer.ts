@@ -30,6 +30,11 @@ export async function sendMail(msg: MailMessage): Promise<boolean> {
       port: smtp.port,
       secure: smtp.secure,
       auth: smtp.user ? { user: smtp.user, pass: smtp.password } : undefined,
+      // nodemailer-in defolt gözləmələri dəqiqələrlədir (qoşulma 2 dəq, soket 10 dəq): SMTP əlçatmazsa
+      // qeydiyyat sorğusu Vercel funksiyasının limitinədək asılı qalırdı. Qısa limit — xəta jurnala düşür, sorğu bitir.
+      connectionTimeout: 8_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 12_000,
     });
     const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#0f1d33">${escapeHtml(msg.text)
       .split("\n")

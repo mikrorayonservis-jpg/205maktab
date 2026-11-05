@@ -27,7 +27,7 @@ export function ChangePasswordForm() {
     }
   }
   return (
-    <form onSubmit={onSubmit} className="mt-4 grid max-w-md gap-4" noValidate>
+    <form method="post" onSubmit={onSubmit} className="mt-4 grid max-w-md gap-4" noValidate>
       {error && <Alert tone="danger">{error}</Alert>}
       <FormField id="currentPassword" label="Cari parol" error={fields.currentPassword} required>
         <Input id="currentPassword" name="currentPassword" type="password" autoComplete="current-password" required />
@@ -92,7 +92,7 @@ export function RedeemForm() {
     }
   }
   return (
-    <form onSubmit={onSubmit} className="max-w-md space-y-3" noValidate>
+    <form method="post" onSubmit={onSubmit} className="max-w-md space-y-3" noValidate>
       <p className="text-sm font-medium">Dəvət kodu ilə uşaq əlavə et</p>
       {error && <Alert tone="danger">{error}</Alert>}
       {done && <Alert tone="success">{done}</Alert>}

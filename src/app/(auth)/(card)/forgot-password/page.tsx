@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
       {msg ? (
         <Alert tone="success" className="mt-6">{msg}</Alert>
       ) : (
-        <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
+        <form method="post" onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
           {error && <Alert tone="danger">{error}</Alert>}
           <FormField id="email" label="E-poçt" error={fields.email} required>
             <Input id="email" name="email" type="email" autoComplete="email" required />
