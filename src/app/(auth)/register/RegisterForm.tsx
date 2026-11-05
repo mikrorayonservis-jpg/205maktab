@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, KeyRound, Lock, Mail, UserRound } from "lucide-react";
-import { checkPassword, passwordHint, passwordInputProps } from "@/lib/password-policy";
+import { passwordHint, passwordInputProps } from "@/lib/password-policy";
+import { fieldErrors, registerSchema } from "@/lib/register-schema";
 import { api } from "@/lib/client/api";
 import { useSubmit } from "@/lib/client/useSubmit";
 import { useHydrated } from "@/lib/client/useHydrated";
@@ -22,7 +23,8 @@ const TIMEOUT_MS = 25_000;
  *
  * Telefonda forma ekrandan uzundur: istifadəçi düyməni basanda yuxarıdakı xəta görünmürdü və səhifə
  * "donmuş" kimi qalırdı. İndi hər uğursuz cəhddən sonra ilk xətalı sahəyə (və ya ümumi xəbərdarlığa)
- * sürüşdürülür və fokus ora keçir.
+ * dərhal (animasiyasız — telefonda klaviatura hamar sürüşməni kəsir) sürüşdürülür və fokus ora keçir.
+ * Brauzer serverlə eyni sxemlə yoxlayır (register-schema), ona görə sahə xətaları serverə getmədən görünür.
  */
 export function RegisterForm() {
   const ready = useHydrated();
@@ -53,23 +55,23 @@ export function RegisterForm() {
     const first = ORDER.find((k) => fields[k]);
     const target: HTMLElement | null | undefined = first ? refs.current[first] : alertRef.current;
     if (!target) return;
-    target.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    target.focus({ preventScroll: true });
+    // Yüklənmə örtüyü çıxandan və layout yeniləndikdən sonra; klaviatura açıqdırsa görünən hissəyə görə hesablanır
+    const id = requestAnimationFrame(() => {
+      const visible = window.visualViewport?.height ?? window.innerHeight;
+      const top = target.getBoundingClientRect().top + window.scrollY - Math.max(72, visible * 0.25);
+      window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+      target.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(id);
   }, [attempt, fields]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
-    const local: Record<string, string> = {};
-    if (!body.code?.trim()) local.code = "Dəvət kodunu daxil edin.";
-    if (!body.firstName?.trim()) local.firstName = "Adınızı yazın.";
-    if (!body.lastName?.trim()) local.lastName = "Soyadınızı yazın.";
-    if (!/^\S+@\S+\.\S+$/.test(body.email || "")) local.email = "E-poçt ünvanını düzgün yazın.";
-    const pw = checkPassword(body.password || "");
-    if (pw) local.password = pw;
-    else if (body.password !== body.passwordConfirm) local.passwordConfirm = "Parollar uyğun gəlmir.";
-    if (Object.keys(local).length) {
-      invalid(local);
+    // Serverlə eyni sxem: 422 cavabına çatmadan səhv sahə dərhal göstərilir
+    const check = registerSchema.safeParse(body);
+    if (!check.success) {
+      invalid(fieldErrors(check.error));
       setShake(true);
       setAttempt((n) => n + 1);
       return;
@@ -95,6 +97,7 @@ export function RegisterForm() {
     );
   }
 
+  const firstFieldError = ORDER.map((k) => fields[k]).find(Boolean);
   const bind = (k: (typeof ORDER)[number]) => ({ ref: (el: HTMLInputElement | null) => { refs.current[k] = el; }, error: fields[k] });
   return (
     <>
@@ -103,7 +106,7 @@ export function RegisterForm() {
         <form method="post" onSubmit={onSubmit} noValidate className={cn("mt-6 space-y-3.5", shake && "login-shake")} onAnimationEnd={() => setShake(false)}>
           {error && (
             <div ref={alertRef} tabIndex={-1} className="scroll-mt-24 focus:outline-none">
-              <Alert tone="danger">{error}</Alert>
+              <Alert tone="danger">{firstFieldError ? `${error} ${firstFieldError}` : error}</Alert>
             </div>
           )}
           <AuthField
