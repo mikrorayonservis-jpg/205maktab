@@ -2,9 +2,27 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-/** Xəbər axtarışı: yazdıqca ~300 ms gecikmə ilə URL yenilənir (səhifə 1-ə qayıdır), server nəticəni süzür. */
-export function NewsSearch({ years }: { years: number[] }) {
+/**
+ * URL əsaslı axtarış sahəsi: yazdıqca ~300 ms gecikmə ilə `?q=` yenilənir (səhifə 1-ə qayıdır),
+ * nəticəni server süzür. Xəbərlər və qalereya eyni komponentdən istifadə edir.
+ */
+export function UrlSearch({
+  id,
+  label,
+  placeholder,
+  years,
+  yearParam = "year",
+  className,
+}: {
+  id: string;
+  label: string;
+  placeholder: string;
+  years?: number[];
+  yearParam?: string;
+  className?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -19,7 +37,7 @@ export function NewsSearch({ years }: { years: number[] }) {
     setValue(q);
   }, [params]);
 
-  function navigate(next: { q?: string; year?: string }) {
+  function navigate(next: Record<string, string | undefined>) {
     const u = new URLSearchParams(params.toString());
     for (const [k, v] of Object.entries(next)) {
       if (v) u.set(k, v);
@@ -41,7 +59,7 @@ export function NewsSearch({ years }: { years: number[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const year = params.get("year") ?? "";
+  const year = params.get(yearParam) ?? "";
   return (
     <form
       role="search"
@@ -52,46 +70,54 @@ export function NewsSearch({ years }: { years: number[] }) {
         last.current = q;
         navigate({ q });
       }}
-      className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:w-auto"
+      className={cn("flex w-full min-w-0 flex-col gap-2 sm:flex-row", className)}
     >
-      <div className="relative min-w-0 flex-1 lg:w-80">
-        <label htmlFor="news-q" className="sr-only">Xəbərlərdə axtarış</label>
+      <div className="relative flex min-w-0 flex-1 items-stretch rounded-xl border border-line-strong bg-surface shadow-[0_6px_18px_-14px_rgb(9_43_99/0.5)] focus-within:border-primary focus-within:ring-3 focus-within:ring-primary/20">
+        <label htmlFor={id} className="sr-only">{label}</label>
+        {pending ? (
+          <Loader2 className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 animate-spin text-ink-3" aria-hidden="true" />
+        ) : (
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-ink-3" aria-hidden="true" />
+        )}
         <input
-          id="news-q"
+          id={id}
           name="q"
           type="search"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           maxLength={100}
-          placeholder="Xəbərlərdə axtarış edin..."
+          placeholder={placeholder}
           autoComplete="off"
-          className="h-10 w-full rounded-md border border-line-strong bg-surface pl-9 pr-9 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 [&::-webkit-search-cancel-button]:hidden"
+          enterKeyHint="search"
+          className="h-12 w-full min-w-0 flex-1 rounded-l-xl bg-transparent pl-11 pr-2 text-[15px] text-ink placeholder:text-ink-3 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
-        {pending ? (
-          <Loader2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-ink-3" aria-hidden="true" />
-        ) : (
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
-        )}
         {value && (
           <button
             type="button"
-            onClick={() => { setValue(""); last.current = ""; navigate({ q: "" }); }}
-            className="absolute right-1 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded text-ink-3 hover:bg-surface-2 hover:text-ink"
+            onClick={() => {
+              setValue("");
+              last.current = "";
+              navigate({ q: "" });
+            }}
+            className="my-1 inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-ink-3 hover:bg-surface-2 hover:text-ink"
             aria-label="Axtarışı təmizlə"
           >
             <X className="size-4" />
           </button>
         )}
+        <button type="submit" className="m-1 inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-navy text-navy-ink hover:bg-navy-hover" aria-label="Axtar">
+          <Search className="size-[18px]" aria-hidden="true" />
+        </button>
       </div>
-      {years.length > 1 && (
+      {years && years.length > 1 && (
         <>
-          <label htmlFor="news-year" className="sr-only">İl</label>
+          <label htmlFor={`${id}-year`} className="sr-only">İl</label>
           <select
-            id="news-year"
-            name="year"
+            id={`${id}-year`}
+            name={yearParam}
             value={year}
-            onChange={(e) => navigate({ year: e.target.value })}
-            className="h-10 rounded-md border border-line-strong bg-surface px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 sm:w-32"
+            onChange={(e) => navigate({ [yearParam]: e.target.value })}
+            className="h-12 rounded-xl border border-line-strong bg-surface px-3.5 text-[15px] text-ink focus:border-primary focus:outline-none focus:ring-3 focus:ring-primary/20 sm:w-36"
           >
             <option value="">Bütün illər</option>
             {years.map((y) => <option key={y} value={y}>{y}</option>)}
@@ -101,4 +127,9 @@ export function NewsSearch({ years }: { years: number[] }) {
       <span className="sr-only" aria-live="polite">{pending ? "Axtarılır..." : ""}</span>
     </form>
   );
+}
+
+/** Xəbərlər səhifəsinin axtarışı (geriyə uyğun ad). */
+export function NewsSearch({ years }: { years: number[] }) {
+  return <UrlSearch id="news-q" label="Xəbərlərdə axtarış" placeholder="Xəbərlərdə axtarış edin..." years={years} className="lg:w-[27rem] lg:shrink-0" />;
 }

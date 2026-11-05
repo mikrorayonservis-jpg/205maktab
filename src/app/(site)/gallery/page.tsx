@@ -1,78 +1,79 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Images, PlayCircle } from "lucide-react";
+import { Suspense } from "react";
+import { CalendarRange, Images, LayoutGrid, ShieldCheck } from "lucide-react";
 import { galleryFilters, publicGalleries } from "@/server/content";
-import { PageIntro } from "@/components/site/parts";
+import { UrlSearch } from "@/components/site/NewsSearch";
+import { ChipLink, ChipRow, GalleryCard, PageHero } from "@/components/site/parts";
 import { EmptyState } from "@/components/ui/Feedback";
 import { Pagination } from "@/components/ui/Pagination";
-import { formatDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Qalereya", description: "Məktəb tədbirlərindən foto və video albomlar.", alternates: { canonical: "/gallery" } };
 
-export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ kateqoriya?: string; il?: string; page?: string }> }) {
+export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ kateqoriya?: string; il?: string; q?: string; page?: string }> }) {
   const sp = await searchParams;
   const year = sp.il && /^\d{4}$/.test(sp.il) ? Number(sp.il) : undefined;
   const category = sp.kateqoriya?.slice(0, 100) || undefined;
-  const page = Math.max(1, Number(sp.page) || 1);
-  const [filters, data] = await Promise.all([galleryFilters(), publicGalleries({ category, year, page })]);
+  const q = sp.q?.replace(/\s+/g, " ").trim().slice(0, 100) || undefined;
+  const page = Math.max(1, Math.min(1000, Number(sp.page) || 1));
+  const [filters, data] = await Promise.all([galleryFilters(), publicGalleries({ category, year, q, page })]);
   const qs = (patch: Record<string, string | undefined>) => {
     const u = new URLSearchParams();
-    const merged = { kateqoriya: category, il: year ? String(year) : undefined, ...patch };
+    const merged = { kateqoriya: category, il: year ? String(year) : undefined, q, ...patch };
     for (const [k, v] of Object.entries(merged)) if (v) u.set(k, v);
     const s = u.toString();
     return `/gallery${s ? `?${s}` : ""}`;
   };
-  const chip = (active: boolean) => cn("rounded-full border px-3 py-1.5 text-sm", active ? "border-primary bg-primary text-primary-ink" : "border-line bg-surface hover:bg-surface-2");
+  const filtered = Boolean(category || year || q);
   return (
     <>
-      <PageIntro eyebrow="Media" title="Foto və video qalereya" crumbs={[{ label: "Qalereya" }]}>
-        Yetkinlik yaşına çatmayan şagirdlərin təsvirləri yalnız valideyn razılığı olduqda dərc edilir.
-      </PageIntro>
-      <div className="container-page py-10">
-        <div className="mb-8 space-y-3">
-          {filters.categories.length > 0 && (
-            <div className="flex flex-wrap gap-2" aria-label="Kateqoriya">
-              <Link href={qs({ kateqoriya: undefined, page: undefined })} className={chip(!category)}>Bütün kateqoriyalar</Link>
-              {filters.categories.map((c) => <Link key={c} href={qs({ kateqoriya: c, page: undefined })} className={chip(category === c)}>{c}</Link>)}
+      <PageHero
+        title="Foto və video qalereya"
+        crumbs={[{ label: "Qalereya" }]}
+        subtitle={
+          <p className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 size-6 shrink-0 text-gold" aria-hidden="true" />
+            <span>Yetkinlik yaşına çatmayan şagirdlərin təsvirləri yalnız valideyn razılığı olduqda dərc edilir.</span>
+          </p>
+        }
+      />
+      <div className="sheet">
+        <div className="container-page pb-4 pt-8 md:pt-10">
+          <div className="mb-8 grid gap-4 lg:mb-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8">
+            <div className="space-y-3">
+              {filters.categories.length > 0 && (
+                <ChipRow label="Kateqoriya">
+                  <ChipLink href={qs({ kateqoriya: undefined, page: undefined })} active={!category}><LayoutGrid className="size-4" aria-hidden="true" />Bütün kateqoriyalar</ChipLink>
+                  {filters.categories.map((c) => <ChipLink key={c} href={qs({ kateqoriya: c, page: undefined })} active={category === c}>{c}</ChipLink>)}
+                </ChipRow>
+              )}
+              {filters.years.length > 0 && (
+                <ChipRow label="İl">
+                  <ChipLink href={qs({ il: undefined, page: undefined })} active={!year}><CalendarRange className="size-4" aria-hidden="true" />Bütün illər</ChipLink>
+                  {filters.years.map((y) => <ChipLink key={y} href={qs({ il: String(y), page: undefined })} active={year === y}>{y}</ChipLink>)}
+                </ChipRow>
+              )}
             </div>
+            <Suspense>
+              <UrlSearch id="gallery-q" label="Albomlarda axtarış" placeholder="Axtarış edin..." />
+            </Suspense>
+          </div>
+          {filtered && (
+            <p className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-surface px-4 py-3 text-sm text-ink-2 ring-1 ring-line" aria-live="polite">
+              <span className="font-semibold text-ink">{data.total ? `${data.total} albom` : "Albom tapılmadı"}</span>
+              {q && <span>— «<span className="font-medium text-ink">{q}</span>»</span>}
+              <Link href="/gallery" className="ml-auto font-semibold text-primary hover:underline">Filtrləri sıfırla</Link>
+            </p>
           )}
-          {filters.years.length > 0 && (
-            <div className="flex flex-wrap gap-2" aria-label="İl">
-              <Link href={qs({ il: undefined, page: undefined })} className={chip(!year)}>Bütün illər</Link>
-              {filters.years.map((y) => <Link key={y} href={qs({ il: String(y), page: undefined })} className={chip(year === y)}>{y}</Link>)}
-            </div>
+          {data.rows.length ? (
+            <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {data.rows.map((g, i) => <li key={g.id}><GalleryCard g={g} priority={i < 3} /></li>)}
+            </ul>
+          ) : (
+            <EmptyState title="Albom tapılmadı" icon={<Images />}>{filtered ? "Başqa filtr seçin və ya axtarış sözünü dəyişin." : "Albomlar dərc olunduqdan sonra burada görünəcək."}</EmptyState>
           )}
+          <Pagination page={data.page} total={data.total} pageSize={data.pageSize} href={(p) => qs({ page: String(p) })} />
         </div>
-        {data.rows.length ? (
-          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {data.rows.map((g) => (
-              <li key={g.id}>
-                <Link href={`/gallery/${g.slug}`} className="group block overflow-hidden rounded-lg border border-line bg-surface">
-                  <div className="aspect-[4/3] overflow-hidden bg-surface-2">
-                    {g.cover_image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={g.cover_image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                    ) : (
-                      <div className="flex size-full items-center justify-center text-ink-3"><Images className="size-10" aria-hidden="true" /></div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h2 className="font-display text-lg font-semibold group-hover:text-primary">{g.title_az}</h2>
-                    <p className="mt-1 flex flex-wrap gap-3 text-xs text-ink-3">
-                      {g.event_date && <span>{formatDate(g.event_date)}</span>}
-                      <span className="inline-flex items-center gap-1"><Images className="size-3.5" aria-hidden="true" />{g.image_count} foto</span>
-                      {g.video_count > 0 && <span className="inline-flex items-center gap-1"><PlayCircle className="size-3.5" aria-hidden="true" />{g.video_count} video</span>}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState title="Albom tapılmadı" icon={<Images className="size-8" />} />
-        )}
-        <Pagination page={data.page} total={data.total} pageSize={data.pageSize} href={(p) => qs({ page: String(p) })} />
       </div>
     </>
   );

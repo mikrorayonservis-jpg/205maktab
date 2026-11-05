@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { LayoutGrid, Newspaper } from "lucide-react";
 import { newsCategories, publishedNews, publishedNewsYears } from "@/server/news";
 import { NewsSearch } from "@/components/site/NewsSearch";
-import { NewsCard, PageIntro } from "@/components/site/parts";
+import { ChipLink, ChipRow, NewsCard, PageHero } from "@/components/site/parts";
 import { EmptyState } from "@/components/ui/Feedback";
 import { Pagination } from "@/components/ui/Pagination";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Xəbərlər", description: "Məktəb xəbərləri, rəsmi elanlar, olimpiadalar və şagird nailiyyətləri.", alternates: { canonical: "/news" } };
 
@@ -41,37 +41,43 @@ export default async function NewsPage({ searchParams }: { searchParams: SP }) {
   const active = cats.find((c) => c.slug === category);
   return (
     <>
-      <PageIntro eyebrow="Media" title={active ? active.name_az : "Xəbərlər"} crumbs={[{ href: active ? "/news" : undefined, label: "Xəbərlər" }, ...(active ? [{ label: active.name_az }] : [])]} />
-      <div className="container-page py-10">
-        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <nav aria-label="Kateqoriyalar" className="-mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-1">
-            <Link href={catHref()} className={cn("shrink-0 rounded-full border px-3 py-1.5 text-sm", !category ? "border-primary bg-primary text-primary-ink" : "border-line bg-surface hover:bg-surface-2")}>Hamısı</Link>
-            {cats.map((c) => (
-              <Link key={c.id} href={catHref(c.slug)} className={cn("shrink-0 rounded-full border px-3 py-1.5 text-sm", category === c.slug ? "border-primary bg-primary text-primary-ink" : "border-line bg-surface hover:bg-surface-2")}>
-                {c.name_az}
-              </Link>
-            ))}
-          </nav>
-          <Suspense>
-            <NewsSearch years={years} />
-          </Suspense>
+      <PageHero
+        title={active ? active.name_az : "Xəbərlər"}
+        subtitle="“Təhsilimiz – gələcəyimizdir!”"
+        crumbs={[{ href: active ? "/news" : undefined, label: "Xəbərlər" }, ...(active ? [{ label: active.name_az }] : [])]}
+      />
+      <div className="sheet">
+        <div className="container-page pb-4 pt-8 md:pt-10">
+          <div id="axtaris" className="mb-8 flex flex-col gap-4 lg:mb-10 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+            <ChipRow label="Kateqoriyalar" className="min-w-0">
+              <ChipLink href={catHref()} active={!category}><LayoutGrid className="size-4" aria-hidden="true" />Hamısı</ChipLink>
+              {cats.map((c) => (
+                <ChipLink key={c.id} href={catHref(c.slug)} active={category === c.slug}>{c.name_az}</ChipLink>
+              ))}
+            </ChipRow>
+            <Suspense>
+              <NewsSearch years={years} />
+            </Suspense>
+          </div>
+          {filtered && (
+            <p className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-surface px-4 py-3 text-sm text-ink-2 ring-1 ring-line" aria-live="polite">
+              <span className="font-semibold text-ink">{data.total ? `${data.total} xəbər tapıldı` : "Heç nə tapılmadı"}</span>
+              {q && <span>— «<span className="font-medium text-ink">{q}</span>»</span>}
+              {year && <span>· {year}</span>}
+              <Link href={category ? `/news?category=${category}` : "/news"} className="ml-auto font-semibold text-primary hover:underline">Filtrləri sıfırla</Link>
+            </p>
+          )}
+          {data.rows.length ? (
+            <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {data.rows.map((n) => <li key={n.id}><NewsCard item={n} /></li>)}
+            </ul>
+          ) : (
+            <EmptyState title={filtered ? "Axtarışa uyğun xəbər tapılmadı" : "Bu bölmədə hələ xəbər yoxdur"} icon={<Newspaper />}>
+              {filtered ? "Başqa söz yazın və ya filtrləri sıfırlayın." : undefined}
+            </EmptyState>
+          )}
+          <Pagination page={data.page} total={data.total} pageSize={data.pageSize} href={href} />
         </div>
-        {filtered && (
-          <p className="mb-5 text-sm text-ink-3" aria-live="polite">
-            {data.total ? `${data.total} xəbər tapıldı` : "Heç nə tapılmadı"}
-            {q && <> — «<span className="font-medium text-ink">{q}</span>»</>}
-            {year && <> · {year}</>}
-            {" · "}<Link href={category ? `/news?category=${category}` : "/news"} className="text-primary hover:underline">Filtrləri sıfırla</Link>
-          </p>
-        )}
-        {data.rows.length ? (
-          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {data.rows.map((n) => <li key={n.id}><NewsCard item={n} /></li>)}
-          </ul>
-        ) : (
-          <EmptyState title={filtered ? "Axtarışa uyğun xəbər tapılmadı" : "Bu bölmədə hələ xəbər yoxdur"}>{filtered ? "Başqa söz yazın və ya filtrləri sıfırlayın." : undefined}</EmptyState>
-        )}
-        <Pagination page={data.page} total={data.total} pageSize={data.pageSize} href={href} />
       </div>
     </>
   );

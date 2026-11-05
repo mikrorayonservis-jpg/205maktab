@@ -25,9 +25,9 @@ export function Alert({ tone = "info", title, children, className }: { tone?: To
 
 export function EmptyState({ title, children, icon, action }: { title: string; children?: ReactNode; icon?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-line-strong bg-surface px-6 py-12 text-center">
-      <div className="mb-3 text-ink-3" aria-hidden="true">{icon ?? <Inbox className="size-8" />}</div>
-      <p className="font-medium text-ink">{title}</p>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line-strong bg-surface px-6 py-14 text-center">
+      <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-primary-soft text-primary [&_svg]:size-7" aria-hidden="true">{icon ?? <Inbox className="size-7" />}</div>
+      <p className="font-display text-lg font-semibold text-ink">{title}</p>
       {children && <div className="mt-1 max-w-md text-sm text-ink-3">{children}</div>}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -46,7 +46,7 @@ const badgeTones: Record<BadgeTone, string> = {
   success: "bg-success-soft text-success",
   warning: "bg-warning-soft text-warning",
   danger: "bg-danger-soft text-danger",
-  gold: "bg-gold-soft text-gold",
+  gold: "bg-gold-soft text-gold-ink",
 };
 
 export function Badge({ tone = "neutral", children, className }: { tone?: BadgeTone; children: ReactNode; className?: string }) {

@@ -9,7 +9,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <ThemeScope storageKey={PUBLIC_THEME_KEY} nonce={nonce}>
       <SiteHeader />
-      <main id="main">{children}</main>
+      {/* tabIndex=-1: "əsas məzmuna keç" və "yuxarı qayıt" fokusu buraya ötürür */}
+      <main id="main" tabIndex={-1} className="outline-none">{children}</main>
       <SiteFooter />
     </ThemeScope>
   );

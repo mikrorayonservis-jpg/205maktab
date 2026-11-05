@@ -17,37 +17,48 @@ export default async function DocumentsPage({ searchParams }: { searchParams: Pr
     .filter(([k]) => !cat || k === cat)
     .map(([k, label]) => ({ k, label, items: docs.filter((d) => d.category_az === k) }))
     .filter((g) => g.items.length);
+  const navCls = (on: boolean) =>
+    cn(
+      "chip lg:min-h-11 lg:w-full lg:justify-start lg:whitespace-normal lg:rounded-xl lg:px-3.5 lg:py-2.5 lg:text-left lg:text-sm",
+      !on && "lg:bg-transparent lg:hover:bg-surface"
+    );
   return (
     <>
-      <PageIntro eyebrow="Məktəb" title="Rəsmi sənədlər" crumbs={[{ label: "Sənədlər" }]} />
-      <div className="container-page grid gap-10 py-10 lg:grid-cols-[240px_1fr]">
+      <PageIntro eyebrow="Məktəb" title="Rəsmi sənədlər" crumbs={[{ href: "/about", label: "Haqqımızda" }, { label: "Sənədlər" }]}>
+        Nizamnamə, tədris planları, daxili qaydalar, hesabatlar və rəsmi sərəncamlar — PDF formatında baxmaq və yükləmək üçün.
+      </PageIntro>
+      <div className="container-page grid gap-8 py-10 md:py-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-12">
         <nav aria-label="Sənəd kateqoriyaları">
-          <ul className="flex gap-2 overflow-x-auto lg:flex-col lg:gap-1">
-            <li><Link href="/documents" className={cn("block shrink-0 rounded-md px-3 py-2 text-sm", !cat ? "bg-primary-soft font-medium text-primary" : "hover:bg-surface-2")}>Bütün sənədlər</Link></li>
+          <ul className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
+            <li className="shrink-0"><Link href="/documents" aria-current={!cat ? "page" : undefined} className={navCls(!cat)}>Bütün sənədlər</Link></li>
             {Object.entries(DOCUMENT_CATEGORIES).map(([k, label]) => (
-              <li key={k}><Link href={`/documents?kateqoriya=${k}`} className={cn("block shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm lg:whitespace-normal", cat === k ? "bg-primary-soft font-medium text-primary" : "hover:bg-surface-2")}>{label}</Link></li>
+              <li key={k} className="shrink-0"><Link href={`/documents?kateqoriya=${k}`} aria-current={cat === k ? "page" : undefined} className={navCls(cat === k)}>{label}</Link></li>
             ))}
           </ul>
         </nav>
         <div className="min-w-0 space-y-10">
-          {!groups.length && <EmptyState title="Bu bölmədə sənəd yoxdur" icon={<FileText className="size-8" />} />}
+          {!groups.length && <EmptyState title="Bu bölmədə sənəd yoxdur" icon={<FileText />}>Sənədlər dərc edildikdən sonra burada görünəcək.</EmptyState>}
           {groups.map((g) => (
             <section key={g.k} aria-labelledby={`dc-${g.k}`}>
-              <h2 id={`dc-${g.k}`} className="mb-3 text-xl font-semibold">{g.label}</h2>
-              <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
+              <h2 id={`dc-${g.k}`} className="mb-4 flex items-baseline gap-3 font-display text-xl font-bold">
+                {g.label} <span className="text-sm font-medium text-ink-3">{g.items.length}</span>
+              </h2>
+              <ul className="card divide-y divide-line">
                 {g.items.map((d) => (
-                  <li key={d.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                    <FileText className="hidden size-8 shrink-0 text-danger sm:block" aria-hidden="true" />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">{d.title_az}</p>
-                      {d.description_az && <p className="text-sm text-ink-3">{d.description_az}</p>}
-                      <p className="mt-0.5 text-xs text-ink-3">PDF{d.file_size ? ` · ${formatFileSize(d.file_size)}` : ""} · {formatDate(d.published_on || d.created_at)}</p>
+                  <li key={d.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
+                    <div className="flex min-w-0 flex-1 gap-4">
+                      <span className="flex h-14 w-11 shrink-0 flex-col items-center justify-end rounded-md border border-line bg-danger-soft pb-1.5 text-[10px] font-extrabold tracking-wide text-danger" aria-hidden="true">PDF</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold leading-snug">{d.title_az}</p>
+                        {d.description_az && <p className="mt-0.5 text-sm text-ink-2">{d.description_az}</p>}
+                        <p className="mt-1 text-xs text-ink-3">PDF{d.file_size ? ` · ${formatFileSize(d.file_size)}` : ""} · {formatDate(d.published_on || d.created_at)}</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <a href={d.file_url} target="_blank" rel="noopener" className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong px-3 text-sm hover:bg-surface-2">
+                    <div className="flex shrink-0 gap-2 sm:ml-4">
+                      <a href={d.file_url} target="_blank" rel="noopener" className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong px-4 text-sm font-semibold hover:border-primary hover:text-primary sm:flex-none">
                         <Eye className="size-4" aria-hidden="true" /> Bax<span className="sr-only">: {d.title_az}</span>
                       </a>
-                      <a href={d.file_url} download className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm text-primary-ink hover:bg-primary-hover">
+                      <a href={d.file_url} download className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-navy px-4 text-sm font-semibold text-navy-ink hover:bg-navy-hover sm:flex-none">
                         <Download className="size-4" aria-hidden="true" /> Yüklə<span className="sr-only">: {d.title_az}</span>
                       </a>
                     </div>

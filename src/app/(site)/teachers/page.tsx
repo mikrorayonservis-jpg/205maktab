@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GraduationCap, ShieldCheck } from "lucide-react";
 import { publicTeachers, teacherSubjects } from "@/server/content";
-import { PageIntro } from "@/components/site/parts";
+import { ChipLink, ChipRow, PageIntro, Portrait } from "@/components/site/parts";
 import { EmptyState } from "@/components/ui/Feedback";
-import { initials, cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Müəllimlər", description: "Məktəbin pedaqoji heyəti: fənlər, ixtisas və təcrübə.", alternates: { canonical: "/teachers" } };
 
@@ -12,34 +12,30 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
   const [subjects, teachers] = await Promise.all([teacherSubjects(), publicTeachers({ subject: fenn && fenn.length < 101 ? fenn : undefined })]);
   return (
     <>
-      <PageIntro eyebrow="Pedaqoji heyət" title="Müəllimlər" crumbs={[{ label: "Müəllimlər" }]}>
-        Şəxsi əlaqə məlumatları ictimai saytda göstərilmir. Müəllimlə əlaqə üçün elektron jurnaldan və ya məktəb rəhbərliyindən istifadə edin.
+      <PageIntro eyebrow="Pedaqoji heyət" title="Müəllimlər" crumbs={[{ href: "/about", label: "Haqqımızda" }, { label: "Müəllimlər" }]}>
+        <p className="flex items-start gap-2.5 text-[15px]">
+          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+          Şəxsi əlaqə məlumatları ictimai saytda göstərilmir. Müəllimlə əlaqə üçün elektron jurnaldan və ya məktəb rəhbərliyindən istifadə edin.
+        </p>
       </PageIntro>
-      <div className="container-page py-10">
+      <div className="container-page py-10 md:py-12">
         {subjects.length > 0 && (
-          <nav aria-label="Fənnə görə filtr" className="mb-8 flex flex-wrap gap-2">
-            <Link href="/teachers" className={cn("rounded-full border px-3 py-1.5 text-sm", !fenn ? "border-primary bg-primary text-primary-ink" : "border-line hover:bg-surface-2")}>Hamısı</Link>
+          <ChipRow label="Fənnə görə filtr" className="mb-8">
+            <ChipLink href="/teachers" active={!fenn}>Hamısı</ChipLink>
             {subjects.map((s) => (
-              <Link key={s} href={`/teachers?fenn=${encodeURIComponent(s)}`} className={cn("rounded-full border px-3 py-1.5 text-sm", fenn === s ? "border-primary bg-primary text-primary-ink" : "border-line hover:bg-surface-2")}>{s}</Link>
+              <ChipLink key={s} href={`/teachers?fenn=${encodeURIComponent(s)}`} active={fenn === s}>{s}</ChipLink>
             ))}
-          </nav>
+          </ChipRow>
         )}
         {teachers.length ? (
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {teachers.map((t) => (
               <li key={t.id}>
-                <Link href={`/teachers/${t.id}`} className="group flex h-full gap-4 rounded-lg border border-line bg-surface p-4 hover:border-primary/40">
-                  <div className="size-16 shrink-0 overflow-hidden rounded-full bg-surface-2">
-                    {t.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.avatar_url} alt="" className="size-full object-cover" loading="lazy" />
-                    ) : (
-                      <span className="flex size-full items-center justify-center font-display text-lg text-primary">{initials(`${t.first_name} ${t.last_name}`)}</span>
-                    )}
-                  </div>
+                <Link href={`/teachers/${t.id}`} className="card card-link group flex h-full items-center gap-4 p-4 sm:p-5">
+                  <Portrait name={`${t.first_name} ${t.last_name}`} url={t.avatar_url} alt="" className="size-16" textClass="text-lg" />
                   <div className="min-w-0">
                     <p className="font-semibold leading-snug group-hover:text-primary">{t.first_name} {t.last_name}</p>
-                    <p className="text-sm text-primary">{t.subject}</p>
+                    {t.subject && <p className="mt-0.5 text-sm font-medium text-primary">{t.subject}</p>}
                     {t.position_az && <p className="text-xs text-ink-3">{t.position_az}</p>}
                   </div>
                 </Link>
@@ -47,7 +43,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
             ))}
           </ul>
         ) : (
-          <EmptyState title="Müəllim profili tapılmadı" />
+          <EmptyState title="Müəllim profili tapılmadı" icon={<GraduationCap />} />
         )}
       </div>
     </>
